@@ -4,6 +4,8 @@ require 'pp'
 require 'logger'
 
 class StixParser
+  @array_of_indicators = []
+  
   def initialize(xml_file_name)
     @xml_file_name = xml_file_name
   end
@@ -24,11 +26,11 @@ class StixParser
 
     # file_name = 'C:\Users\tpegg\Desktop\privilege\MIFR-421835-A_stix.xml'
 
-    @xml_file = File.open(xml_file_name,'r')
+    @xml_file = File.open(@xml_file_name,'r')
     @doc = Nokogiri::XML(@xml_file)
 
     logger.debug "#"*line_padding
-    logger.debug "File Name: " + file_name
+    logger.debug "File Name: " + @xml_file_name
     logger.debug "#"*line_padding
     @doc.collect_namespaces.each do | key,value |
       logger.debug  "XML NameSpaces: " + "%-10s  %10s" % [ key, value]

@@ -1,9 +1,9 @@
 #!/usr/bin/ruby
 
-#require 'Indicators.rb'
-#require 'StixIndicators.rb'
-#require 'EmailMessageObj.rb'
-#require 'date'
+require 'Indicators.rb'
+require 'StixIndicators.rb'
+require 'EmailMessageObj.rb'
+require 'date'
 #
 #t =  IndicatorType.new("stixVocabs:IndicatorTypeVocab-1.0", "Domain Watchlist")
 #puts t
@@ -53,19 +53,31 @@
 #tempStixTypeObj = StixTypeObj.new("123","ref","12/31/2014","1.2", data)
 #puts tempStixTypeObj.to_s
 #puts tempStixTypeObj.class.name
+#puts "****************Dir Test**************************"
+#
+#@files = Dir.entries("C:\\Users\\tpegg\\Desktop\\privilege").select {|f| !File.directory? f}
+#  
+#@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
+#  puts file
+#end
 
-puts "****************Dir Test**************************"
-@files = Dir['C:\Users\tpegg\Desktop\privilege\.*STIX.*']
+## 'C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml'
+#puts "****************StixParser Test**************************"
+#require 'nokogiri-test.rb'
+#
+#@parser = StixParser.new('C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml')
+#@parser.parse()
 
-@files.each do | entry |
-  puts entry
-end
-puts "****************Dir Test**************************"
 
-@files = Dir.entries("C:\\Users\\tpegg\\Desktop\\privilege").select {|f| !File.directory? f}
-  
-@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
-  puts file
-end
+
+#puts StixHeaderType.new("My Stix Title", "New Description").to_s
+
+require 'time'
+#time = Time.now.getutc
+#puts time.inspect
+
+puts "UTC: " + Time.parse('2014-11-17T21:23:30Z').inspect
+
+puts "Local: " + Time.parse('2014-11-17T21:23:30Z').localtime.inspect
 
 
