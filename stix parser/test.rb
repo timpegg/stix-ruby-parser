@@ -4,6 +4,8 @@ require 'Indicators.rb'
 require 'StixIndicators.rb'
 require 'EmailMessageObj.rb'
 require 'date'
+require 'time'
+
 #
 #t =  IndicatorType.new("stixVocabs:IndicatorTypeVocab-1.0", "Domain Watchlist")
 #puts t
@@ -62,22 +64,66 @@ require 'date'
 #end
 
 ## 'C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml'
-#puts "****************StixParser Test**************************"
-#require 'nokogiri-test.rb'
-#
-#@parser = StixParser.new('C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml')
-#@parser.parse()
-
 
 
 #puts StixHeaderType.new("My Stix Title", "New Description").to_s
 
-require 'time'
-#time = Time.now.getutc
-#puts time.inspect
+##time = Time.now.getutc
+##puts time.inspect
+#
+#puts "UTC: " + Time.parse('2014-11-17T21:23:30Z').inspect
+#
+#puts "Local: " + Time.parse('2014-11-17T21:23:30Z').localtime.inspect
+#
+#
+#
 
-puts "UTC: " + Time.parse('2014-11-17T21:23:30Z').inspect
+#puts "****************StixParser Test**************************"
+#require 'nokogiri-test.rb'
+#
+#@parser = StixParser.new('C:\Users\tpegg\Desktop\privilege\IB-15-10057.STIX.xml')
+#@parser.parse()
+#
 
-puts "Local: " + Time.parse('2014-11-17T21:23:30Z').localtime.inspect
+puts "****************JSON Test**************************"
+
+require 'json'
+#string = '{"urls":{"url":"1234","kill_chain_name":"c2","date":"03/04/2014"},"domain names":{"domain name":"DNS_Value","delivery":"kill_chain_valuse","date":"03/04/2014"}}'
+#parsed = JSON.parse(string) # returns a hash
+#
+#p parsed["urls"]["url"]
+#p parsed["domain names"]
+
+@key_string = "test.com"  
+@testhash = {}
+@testhash[@key_string] = ["c2","3/4/5"]
+@key_string = "bash.com"  
+@testhash[@key_string] = ["c2","3/4/5"]
+@key_string = "joho.com"  
+@testhash[@key_string] = ["c2","3/4/5"]
+@key_string = "test.com"  
+@testhash[@key_string] = ["c2","3/4/15"]
+
+@testhash.each do | k,v|
+  puts "#{k}:#{v}"
+end
+
+puts @json_text = JSON.pretty_generate(@testhash)
+
+  
+## Read JSON from a file, iterate over objects
+#file = open("shops.json")
+#json = file.read
+#
+#parsed = JSON.parse(json)
+#
+#parsed["shop"].each do |shop|
+#  p shop["id"]
+#end
+
+puts "****************JSON Test END**************************"
+
+
+
 
 
