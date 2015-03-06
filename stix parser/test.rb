@@ -38,7 +38,7 @@ require 'time'
 #attribute[:is_source] = "true"
 #attribute[:is_destination] = "false"
 #attribute[:is_spoofed] = "true"
-#  
+#
 #puts AddressObjType.new(attribute, "10.0.0.1", nil, nil).to_s
 #
 #addressobj =  AddressObjType.new(attribute, "10.0.0.1", nil, nil)
@@ -58,13 +58,24 @@ require 'time'
 #puts "****************Dir Test**************************"
 #
 #@files = Dir.entries("C:\\Users\\tpegg\\Desktop\\privilege").select {|f| !File.directory? f}
-#  
+#
+#Dir.chdir 'C:\Users\tpegg\Desktop\privilege'
+#
+#@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
+#  puts file
+#end
+#
+#@files = Dir.entries('C:\Users\tpegg\Desktop\privilege').select {|entry| File.directory? File.join('/your_dir',entry) and !(entry =='.' || entry == '..') }
+#
+#  puts "****************Dir Test**************************"
+#
 #@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
 #  puts file
 #end
 
+  
+  
 ## 'C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml'
-
 
 #puts StixHeaderType.new("My Stix Title", "New Description").to_s
 
@@ -78,52 +89,90 @@ require 'time'
 #
 #
 
-#puts "****************StixParser Test**************************"
-#require 'nokogiri-test.rb'
-#
-#@parser = StixParser.new('C:\Users\tpegg\Desktop\privilege\IB-15-10057.STIX.xml')
-#@parser.parse()
-#
-
-puts "****************JSON Test**************************"
-
+puts "****************StixParser Test**************************"
 require 'json'
-#string = '{"urls":{"url":"1234","kill_chain_name":"c2","date":"03/04/2014"},"domain names":{"domain name":"DNS_Value","delivery":"kill_chain_valuse","date":"03/04/2014"}}'
-#parsed = JSON.parse(string) # returns a hash
-#
-#p parsed["urls"]["url"]
-#p parsed["domain names"]
+require 'date'
+require 'nokogiri-test.rb'
 
-@key_string = "test.com"  
-@testhash = {}
-@testhash[@key_string] = ["c2","3/4/5"]
-@key_string = "bash.com"  
-@testhash[@key_string] = ["c2","3/4/5"]
-@key_string = "joho.com"  
-@testhash[@key_string] = ["c2","3/4/5"]
-@key_string = "test.com"  
-@testhash[@key_string] = ["c2","3/4/15"]
+@theonering_hash = Hash.new()
 
-@testhash.each do | k,v|
-  puts "#{k}:#{v}"
+@working_dir = 'C:\Users\tpegg\Desktop\privilege'
+
+Dir.chdir @working_dir
+
+@files = Dir.entries(@working_dir).select {|f| !File.directory? f}
+
+@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
+
+  @parser = StixParser.new(file)
+  @parser_hash = @parser.parse()
+
+  @parser_hash.each do | k,v|
+    @theonering_hash[k]=[v]
+  end
+
 end
 
-puts @json_text = JSON.pretty_generate(@testhash)
+puts @json_text = JSON.pretty_generate(@theonering_hash)
 
-  
-## Read JSON from a file, iterate over objects
-#file = open("shops.json")
-#json = file.read
+#puts "****************JSON Test**************************"
 #
-#parsed = JSON.parse(json)
+#require 'json'
+#require 'date'
 #
-#parsed["shop"].each do |shop|
-#  p shop["id"]
+##string = '{"urls":{"url":"1234","kill_chain_name":"c2","date":"03/04/2014"},"domain names":{"domain name":"DNS_Value","delivery":"kill_chain_valuse","date":"03/04/2014"}}'
+##parsed = JSON.parse(string) # returns a hash
+##
+##p parsed["urls"]["url"]
+##p parsed["domain names"]
+#
+#@key_string = "test.com"
+#@testhash = {}
+#@testhash[@key_string] = ["c2", Time.parse('2014-11-22T21:23:30Z') ]
+#@key_string = "bash.com"
+#@testhash[@key_string] = ["c2", Time.parse('2014-11-21T21:23:30Z')]
+#@key_string = "joho.com"
+#@testhash[@key_string] = ["c2", Time.parse('2014-11-20T21:23:30Z')]
+#@testhash[@key_string] = ["delivery","3/14/15"]
+#@testhash[@key_string] = ["c2","3/16/15"]
+#@testhash[@key_string] = ["c2",Time.parse('2015-11-19T21:23:30Z')]
+#@key_string = "test.com"
+#@testhash[@key_string] = ["c2",Time.parse('2016-11-18T21:23:30Z')]
+#@key_string = "test2.com"
+#@testhash[@key_string] = ["delivery",Time.parse('2017-11-17T21:23:30Z')]
+#
+#@testhash.each do | k,v|
+#  puts "#{k}:#{v}"
 #end
-
-puts "****************JSON Test END**************************"
-
-
-
-
+#
+#puts @json_text = JSON.pretty_generate(@testhash)
+#
+#@new_hash = JSON.parse(@json_text)
+#
+#
+##@new_hash.each do | k,v|
+##  @parsed_hash[k] = v if Time.parse(v[1]).to_date <= Date.today
+##end
+#
+#parsed_hash = Hash.new
+#@new_hash.each do | pair|
+#  parsed_hash.store(pair[0], pair[1]) if Time.parse(pair[1][1]).to_date >= Date.today
+#end
+#
+#parsed_hash.each do | k,v|
+#  puts "#{k}:#{v}"
+#end
+#
+#
+### Read JSON from a file, iterate over objects
+##file = open("shops.json")
+##json = file.read
+##
+##parsed = JSON.parse(json)
+##
+##parsed["shop"].each do |shop|
+##  p shop["id"]
+##end
+#
+#puts "****************JSON Test END**************************"
 
