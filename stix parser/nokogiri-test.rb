@@ -11,11 +11,11 @@ class StixParser
   def initialize(xml_file_name)
     @xml_file_name = xml_file_name
   end
-
+  
   def parse()
 
-    # TODO:  Need to account for <cybox:Observable_Composition operator="AND"> to parse out additional IP addresses.
-    # 'C:\Users\tpegg\Desktop\privilege\IB-15-20005.stix.xml'
+    @xml_file_name_comp = File.basename @xml_file_name
+    @results_hash = Hash.new
 
     line_padding = 80
     logger = Logger.new($stdout)
@@ -27,8 +27,6 @@ class StixParser
       #  "#{datetime}:#{progname}: #{severity}: #{msg}\n"
       "StixParser: %-5s: %10s\n" % [ severity, msg]
     end
-
-    # file_name = 'C:\Users\tpegg\Desktop\privilege\MIFR-421835-A_stix.xml'
 
     @xml_file = File.open(@xml_file_name,'r')
     @doc = Nokogiri::XML(@xml_file)
@@ -51,8 +49,8 @@ class StixParser
       logger.debug "%-18s %s" % [ "Stix:Indicator [@id]:"  , stix_indicator.attribute("id") ]
 
       # These will be the output for each node as applicable.
-      $observable_item = nil;
-      $kill_chain_name = nil;
+      @observable_item = nil;
+      @kill_chain_name = nil;
       
       @indicator_observables = stix_indicator.search('./indicator:Observable')
 
@@ -70,15 +68,18 @@ class StixParser
 
           # This searches for Email messages, ipv4-addr, URLs,
           @cybox_properties=cybox_object.search('./cybox:Properties[@xsi:type="EmailMessageObj:EmailMessageObjectType"]   |
-                                             ./cybox:Properties[@category="ipv4-addr"]  |
-                                             ./cybox:Properties[@type="URL"] |
-                                             ./cybox:Properties[@type="Domain Name"]
+                                                 ./cybox:Properties[@xsi:type="AddressObj:AddressObjectType"]  |
+                                                 ./cybox:Properties[@xsi:type="LinkObj:LinkObjectType"] |
+                                                 ./cybox:Properties[@xsi:type="URIObj:URIObjectType"]
                                             ')
 
           @cybox_properties.each do |cybox_property |
             logger.debug "%-18s %s" % [ "   cybox:Properties [Path]:" , cybox_property.path ]
             logger.debug "%-18s %s" % [ "   cybox:Properties [Name]:" , cybox_property.name ]
-
+            @observable_type_hash = cybox_property.attributes;
+            logger.debug "%-18s %s" % [ "   cybox:Properties [xsi:type]:" , cybox_property["xsi:type"].to_s.gsub(/(.*):(.*)/, '\1') ]
+            @observable_type = cybox_property["xsi:type"].to_s.gsub(/(.*):(.*)/, '\1')
+            
             if cybox_property.namespaces.has_key?('xmlns:DomainNameObj')
               logger.debug "   cybox:Properties Note: Has namespace xmlns:DomainNameObj"
               @domainnameobjs = cybox_property.search('./DomainNameObj:Value')
@@ -87,8 +88,8 @@ class StixParser
                 logger.debug "%-18s %s" % [ "    DomainNameObj:Value [Path]:" , domainnameobj.path ]
                 logger.debug "%-18s %s" % [ "    DomainNameObj:Value [Name]:" , domainnameobj.name ]
                 logger.info "%-18s %s" % [ "    DomainNameObj:Value [Content]:" , domainnameobj.content ]
-                $observable_item = domainnameobj.content
-                $observable_type = "domain name"
+                @observable_item = domainnameobj.content
+                #@observable_type = domainnameobj.name.to_s
               end # End domainnameobjs.each
 
             else
@@ -104,8 +105,8 @@ class StixParser
                 logger.debug "%-18s %s" % [ "    URIObj:Value [Path]:" , uriobj_value.path ]
                 logger.debug "%-18s %s" % [ "    URIObj:Value [Name]:" , uriobj_value.name ]
                 logger.info "%-18s %s" % [ "    URIObj:Value [Content]:" , uriobj_value.content ]
-                $observable_item = uriobj_value.content
-                $observable_type = "url"
+                @observable_item = uriobj_value.content.gsub(/[Hh]([Tt]|[Xx]){2}[Pp]:\/\/(.*?)(\/|:|$)/, '\2')
+                #@observable_type = uriobj_value.name.to_s
 
               end # End uriobj_values.each
 
@@ -122,8 +123,8 @@ class StixParser
                 logger.debug "%-18s %s" % [ "    AddrObj:Address_Value [Path]:" , addrobj_address_values.path ]
                 logger.debug "%-18s %s" % [ "    AddrObj:Address_Value [Name]:" , addrobj_address_values.name ]
                 logger.info "%-18s %s" % [ "    AddrObj:Address_Value [Content]:" , addrobj_address_values.content ]
-                $observable_item = addrobj_address_values.content
-                $observable_type = "ipv4-addr"
+                @observable_item = addrobj_address_values.content
+                #@observable_type = addrobj_address_values.name.to_s
                 
               end # End @addrobj_address_values.each
 
@@ -152,8 +153,8 @@ class StixParser
                     logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Path]:" , addrobj_address_value.path ]
                     logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Name]:" , addrobj_address_value.name ]
                     logger.info "%-18s %s" % [ "      AddrObj:Address_Value [Content]:" , addrobj_address_value.content ]
-                    $observable_item = addrobj_address_value.content
-                    $observable_type = "e-mail"
+                    @observable_item = addrobj_address_value.content
+                    #@observable_type = addrobj_address_value.name.to_s
                     
                   end # End addrobj_address_values.each
 
@@ -171,7 +172,7 @@ class StixParser
 
       end # End indicator_observables.each
 
-      if !$observable_item.nil?
+      if !@observable_item.nil?
         @indicator_kill_chain_phases = stix_indicator.search('./indicator:Kill_Chain_Phases')
 
         @indicator_kill_chain_phases.each do | indicator_kill_chan_phase |
@@ -184,15 +185,20 @@ class StixParser
                                                                      ./stixCommon:Kill_Chain_Phase[@name="Delivery"]
                                                                    ')
           @stixcommon_kill_chain_phases.each do | stixcommon_kill_chain_phase |
-            logger.debug "%-18s %s" % [ "  stixCommon:Kill_Chain_Phase [Path]:" , stixcommon_kill_chain_phase.path ]
-            logger.debug "%-18s %s" % [ "  stixCommon:Kill_Chain_Phase [Name]:" , stixcommon_kill_chain_phase.name ]
-            logger.info "%-18s %s" % [ "  stixCommon:Kill_Chain_Phase [attribute(name)]:" , stixcommon_kill_chain_phase.attribute('name') ]
-            logger.info "%-18s %s" % [ "  stixCommon:Kill_Chain_Phase [attribute(ordinality)]:" , stixcommon_kill_chain_phase.attribute('ordinality') ]
+            logger.debug "  %18s %s" % [ "stixCommon:Kill_Chain_Phase [Path]:" , stixcommon_kill_chain_phase.path ]
+            logger.debug "  %18s %s" % [ "stixCommon:Kill_Chain_Phase [Name]:" , stixcommon_kill_chain_phase.name ]
+            logger.info "  %18s %s" % [ "stixCommon:Kill_Chain_Phase [attribute(name)]:" , stixcommon_kill_chain_phase.attribute('name') ]
+            logger.info "  %18s %s" % [ "stixCommon:Kill_Chain_Phase [attribute(ordinality)]:" , stixcommon_kill_chain_phase.attribute('ordinality') ]
             
-            $kill_chain_name = stixcommon_kill_chain_phase.attribute('name')
+            @kill_chain_name = stixcommon_kill_chain_phase.attribute('name').content
             
             
-            puts $observable_type + " : " + $observable_item + " : " + $kill_chain_name  + " : " +  Time.now.to_s
+            logger.info "#"*line_padding
+            logger.info "%-10s %s" % [ "Found: ", @observable_item + " ::: " + @observable_type + " : " + @kill_chain_name  + " : " + @xml_file_name_comp + " : " + Time.now.to_s ]
+            logger.info "#"*line_padding
+
+            @results_hash[@observable_item] = [@observable_type, @kill_chain_name, @xml_file_name_comp, Time.now.to_s]
+            
           end # End stixcommon_kill_chain_phases
 
         end # End indicator_kill_chan_phases.each
@@ -209,11 +215,19 @@ class StixParser
     logger.debug "#"*line_padding
 
     @xml_file.close
-
+    
+    logger.info "#"*line_padding
+    logger.info "%-10s" % [ "Hash return values:  "]
+    logger.info "#"*line_padding
+    @results_hash.each do | k,v|
+      logger.info "   %15s" % [ "#{k}:#{v}" ]
+    end
+    logger.info "#"*line_padding
+    
     logger.info "#"*line_padding
     logger.info  "Parser complete"
     logger.info "#"*line_padding
-
+    return @results_hash
   end #End Parse
 
 end # End StixParser
