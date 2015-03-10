@@ -6,6 +6,9 @@ require 'time'
 require 'json'
 
 
+#TODO Review the LinkObj to determine if we need to check for URL_Label conditions.  For example the uri may show adobe.com but the link goes to evildomain.com
+
+
 class StixParser
   @array_of_indicators = []
   def initialize(xml_file_name)
@@ -105,7 +108,8 @@ class StixParser
                 logger.debug "%-18s %s" % [ "    URIObj:Value [Path]:" , uriobj_value.path ]
                 logger.debug "%-18s %s" % [ "    URIObj:Value [Name]:" , uriobj_value.name ]
                 logger.info "%-18s %s" % [ "    URIObj:Value [Content]:" , uriobj_value.content ]
-                @observable_item = uriobj_value.content.gsub(/[Hh]([Tt]|[Xx]){2}[Pp]:\/\/(.*?)(\/|:|$)/, '\2')
+                #@observable_item = uriobj_value.content.gsub(/[Hh]([Tt]|[Xx]){2}[Pp]:\/\/(.*?)(\/|:|$)/, '\2')
+                @observable_item =  uriobj_value.content
                 #@observable_type = uriobj_value.name.to_s
 
               end # End uriobj_values.each
@@ -197,7 +201,7 @@ class StixParser
             logger.info "%-10s %s" % [ "Found: ", @observable_item + " ::: " + @observable_type + " : " + @kill_chain_name  + " : " + @xml_file_name_comp + " : " + Time.now.to_s ]
             logger.info "#"*line_padding
 
-            @results_hash[@observable_item] = [@observable_type, @kill_chain_name, @xml_file_name_comp, Time.now.to_s]
+            @results_hash[@observable_item.downcase] = [@observable_type.downcase, @kill_chain_name.downcase, @xml_file_name_comp.downcase, Time.now.to_s]
             
           end # End stixcommon_kill_chain_phases
 
