@@ -73,8 +73,6 @@ require 'time'
 #  puts file
 #end
 
-  
-  
 ## 'C:\Users\tpegg\Desktop\privilege\MIFR-407235_stix.xml'
 
 #puts StixHeaderType.new("My Stix Title", "New Description").to_s
@@ -93,6 +91,10 @@ puts "****************StixParser Test**************************"
 require 'json'
 require 'date'
 require 'nokogiri-test.rb'
+require 'mail'
+require 'uri'
+
+# Mail and nokogiri must be installed.
 
 @theonering_hash = Hash.new()
 
@@ -102,18 +104,109 @@ Dir.chdir @working_dir
 
 @files = Dir.entries(@working_dir).select {|f| !File.directory? f}
 
-@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*)/).each do | file |
+@email_hash = Hash.new
+@uri_hash = Hash.new
+@addr_hash = Hash.new
+@link_hash = Hash.new
+
+@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*).[Xx][Mm][Ll]$/).each do | file |
 
   @parser = StixParser.new(file)
   @parser_hash = @parser.parse()
 
   @parser_hash.each do | k,v|
-    @theonering_hash[k]=[v]
+    puts "#{v[0]}"
+    case v[0]
+    when "emailmessageobj"
+      @email_hash[k] = [v]
+      #      puts "#{k} #{v}"
+    when "uriobj"
+      @uri_hash[k] = [v]
+      #      puts "#{k} #{v}"
+    when "linkobj"
+      @link_hash[k]=[v]
+      #      puts "#{k} #{v}"
+    when "addressobj"
+      @addr_hash[k]=[v]
+      #      puts "#{k} #{v}"
+    else
+      puts "ERROR:  #{k} ---  #{[v]}"
+    end
   end
 
 end
 
-puts @json_text = JSON.pretty_generate(@theonering_hash)
+#@theonering_hash.each do |k,v|
+#  @temp_str = URI(k).host if
+#  @clean_hash[@temp_str] = v
+#end
+
+#puts '****************************************************'
+#puts '******************RAW****************************'
+#puts @json_text = JSON.pretty_generate(@theonering_hash)
+#puts '****************************************************'
+
+#a = Mail::Address.new('Patrick Lewis (My email address) <patrick@example.endpoint.com>')
+#puts a.format       #=> 'Patrick Lewis <patrick@example.endpoint.com> (My email address)'
+#puts a.address      #=> 'patrick@example.endpoint.com
+#puts a.display_name #=> 'Patrick Lewis'
+#puts a.local        #=> 'patrick'
+#puts a.domain       #=> 'example.endpoint.com'
+#puts a.comments     #=> ['My email address']
+#puts a.to_s         #=> 'Patrick Lewis <patrick@example.endpoint.com> (My email address)'
+
+#@clean_hash = Hash.new()
+#
+#@theonering_hash.each do |k,v|
+#  begin
+#    a = Mail::Address.new(k)
+#  rescue
+#    puts "MAIL FORMAT ERROR for #{k} with #{v[0]}"
+#  else
+#    if (v[0][0].downcase == "EmailMessageObj".downcase)
+#      #      puts a.address + ":" + "#{v[0]}"
+#      @clean_hash[a.address] = [v]
+#    end
+#  end
+#end
+#
+#@theonering_hash.each do |k,v|
+#  begin
+#    a = URI(k)
+#  rescue
+#    puts "URI FORMAT ERROR for #{k} with #{v[0]}"
+#  else
+#    if (v[0][0].downcase == "EmailMessageObj".downcase)
+#      #      puts a.address + ":" + "#{v[0]}"
+#      @clean_hash[a.address] = [v]
+#    end
+#  end
+#end
+#
+#File.open('C:\Users\tpegg\Desktop\privilege\output.json',"w") do |f|
+#  f.write(JSON.pretty_generate(@theonering_hash))
+#end
+
+#rescue Mail::Field::ParseError=>e
+#   puts "Could not parse #{k} invalid email address"
+#else
+
+#while 1
+#  puts "Enter a number>>"
+#  begin
+#    num = Kernel.gets.match(/\d+/)[0]
+#  rescue StandardError=>e
+#    puts "Erroneous input!"
+#    puts e
+#    puts "\tTry again...\n"
+#  else
+#    puts "#{num} + 1 is: #{num.to_i+1}"
+#  end
+#end
+#puts '****************************************************'
+#puts JSON.pretty_generate(@clean_hash)
+#puts '****************************************************'
+#puts '****************************************************'
 
 #puts "****************JSON Test**************************"
 #
