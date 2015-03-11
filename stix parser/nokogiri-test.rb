@@ -5,10 +5,6 @@ require 'logger'
 require 'time'
 require 'json'
 
-
-#TODO Review the LinkObj to determine if we need to check for URL_Label conditions.  For example the uri may show adobe.com but the link goes to evildomain.com
-
-
 class StixParser
   @array_of_indicators = []
   def initialize(xml_file_name)
@@ -198,7 +194,7 @@ class StixParser
             
             
             logger.info "#"*line_padding
-            logger.info "%-10s %s" % [ "Found: ", @observable_item + " ::: " + @observable_type + " : " + @kill_chain_name  + " : " + @xml_file_name_comp + " : " + Time.now.to_s ]
+            logger.info "%-10s %s" % [ "Found: ", @observable_item.downcase + " ::: " + @observable_type.downcase + " : " + @kill_chain_name.downcase  + " : " + @xml_file_name_comp.downcase + " : " + Time.now.to_s ]
             logger.info "#"*line_padding
 
             @results_hash[@observable_item.downcase] = [@observable_type.downcase, @kill_chain_name.downcase, @xml_file_name_comp.downcase, Time.now.to_s]
