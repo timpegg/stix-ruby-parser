@@ -12,7 +12,7 @@ module Ewinparser
       opt_parser = OptionParser.new do |opts|
         opts.banner = "ewinparser - v#{Ewinparser::VERSION}"
         opts.separator ""
-        opts.separator "Usage: #{@@command_name} [options] [goals]"
+        opts.separator "Usage: #{@@command_name} [options]"
         opts.separator ""
 #        opts.separator "goals defaults to 'cond_stop deploy start'"
 #        opts.separator "NOTE: Goals will be run in the provided order.  It is up to you to not do something dumb."
@@ -20,7 +20,11 @@ module Ewinparser
 
         opts.separator "Specific options:"
 
-        opts.on("-j", "--jsonfile JSONFILENAME", "Current database of findings from previous EWINs") do |jsonfile|
+        # This is the file used as the database.  If the file is empty then the script generates a new database.
+        # TODO Create an entry for the JSONFile that has the some file meta data information. Need to think if there is any useful information for this header.
+        opts.on("-j", "--jsonfile JSONFILENAME", "Output from previous #{@@command_name} execution.",
+                                                 " If this is empty or dosen't exist this is where the output will be kept",
+                                                 " If the file has contents this will be updated with the current information") do |jsonfile|
           options.jsonfile = jsonfile
         end
         
@@ -51,10 +55,8 @@ module Ewinparser
 
         options.version = nil
         options.loglevel = Logger::INFO
-        options.db_dir = 'db'
         options.show_help = false
         options.quiet = false
-        options.config_key = nil
 
         options
     end
@@ -64,6 +66,20 @@ module Ewinparser
         parse(['--help'])
     end
 
+    # Parse a log level argument into the appropriate Logger constant
+    def self.log_level_parse(level)
+        if(level == :info)
+            return Logger::INFO
+        elsif(level == :debug)
+            return Logger::DEBUG
+        elsif(level == :warn)
+            return Logger::WARN
+        elsif(level == :error)
+            return Logger::ERROR
+        end
+    end
+
+    
   end
 end
 

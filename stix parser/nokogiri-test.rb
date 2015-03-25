@@ -17,15 +17,6 @@ class StixParser
     @results_hash = Hash.new
 
     line_padding = 80
-    logger = Logger.new($stdout)
-    logger.level = Logger::WARN
-#    logger.level = Logger::INFO
-#    logger.level = Logger::DEBUG
-    logger.datetime_format = "%Y-%m-%d %H:%M:%S"
-    logger.formatter = lambda do |severity, datetime, progname, msg|
-      #  "#{datetime}:#{progname}: #{severity}: #{msg}\n"
-      "StixParser: %-5s: %10s\n" % [ severity, msg]
-    end
 
     @xml_file = File.open(@xml_file_name,'r')
     @doc = Nokogiri::XML(@xml_file)

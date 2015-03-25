@@ -26,10 +26,10 @@ def main
 #  runner = Ewinparser::GoalRunner.new(nil, opts)
 #  runner.run_goals
 
-  help unless opts.json_file
+  help unless opts.jsonfile
 
   begin
-    database = Ewinparser.load_database_from_file();
+    database = Ewinparser.load_database_from_file(opts['jsonfile'])
 
   rescue Errno::ENOENT => e
     $stderr.puts e.message
