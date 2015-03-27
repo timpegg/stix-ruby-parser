@@ -6,6 +6,8 @@ require 'logger'
 module Ewinparser
   class CliParser
     @@command_name = 'ewinparser'
+
+    
     def self.parse(args)
       options = default_options()
 
@@ -14,9 +16,6 @@ module Ewinparser
         opts.separator ""
         opts.separator "Usage: #{@@command_name} [options]"
         opts.separator ""
-#        opts.separator "goals defaults to 'cond_stop deploy start'"
-#        opts.separator "NOTE: Goals will be run in the provided order.  It is up to you to not do something dumb."
-#        opts.separator ""
 
         opts.separator "Specific options:"
 
@@ -38,7 +37,6 @@ module Ewinparser
 
         opts.on_tail("-h", "--help", "Show this message") do
           puts opts
-#          GoalRunner.help
           puts "\n"
           options.show_help = true
         end
@@ -52,7 +50,6 @@ module Ewinparser
     
     def self.default_options
         options = OpenStruct.new
-
         options.version = nil
         options.loglevel = Logger::INFO
         options.show_help = false
@@ -79,6 +76,9 @@ module Ewinparser
         end
     end
 
+    def self.command_name
+      @@command_name 
+    end
     
   end
 end

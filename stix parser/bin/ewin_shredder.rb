@@ -3,7 +3,7 @@ $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/../lib")
 #!/usr/bin/env ruby
 require 'ewinparser'
 require 'ewinparser/cli_parser'
-#require 'ewinparser/goal_runner'
+require 'ewinparser/db_parser'
 
 def main
   opts = nil
@@ -17,20 +17,17 @@ def main
 
   Ewinparser.logger.level = opts['loglevel']
 
-  # If the user requested the help message, don't continue
   if opts.show_help
     exit
   end
 
-  # TODO Not sure what this is doing ... check to see if I need this..
-#  runner = Ewinparser::GoalRunner.new(nil, opts)
-#  runner.run_goals
-
   help unless opts.jsonfile
 
   begin
-    database = Ewinparser.load_database_from_file(opts['jsonfile'])
-
+    @database = Ewinparser::Db_parser.parse(opts['jsonfile'])
+    @output = Ewinparser::StixParser.parse('C:\Users\tpegg\Desktop\privilege\IB-14-20054.stix.xml')
+    @clean_output
+    
   rescue Errno::ENOENT => e
     $stderr.puts e.message
   end
