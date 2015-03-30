@@ -4,6 +4,8 @@ require 'json'
 require_relative 'ewinparser/version'
 require_relative 'ewinparser/cli_parser'
 require_relative 'ewinparser/stix_parser'
+require_relative 'ewinparser/scrubber'
+
 
 module Ewinparser
   def self.logger

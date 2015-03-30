@@ -4,6 +4,9 @@ $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/../lib")
 require 'ewinparser'
 require 'ewinparser/cli_parser'
 require 'ewinparser/db_parser'
+require 'ewinparser/scrubber'
+require 'ewinparser/spreadsheet_parser'
+
 
 def main
   opts = nil
@@ -24,10 +27,13 @@ def main
   help unless opts.jsonfile
 
   begin
-    @database = Ewinparser::Db_parser.parse(opts['jsonfile'])
-    @output = Ewinparser::StixParser.parse('C:\Users\tpegg\Desktop\privilege\IB-14-20054.stix.xml')
-    @clean_output
-    
+#    @database = Ewinparser::Db_parser.parse(opts['jsonfile'])
+#    @output = Ewinparser::Stix_parser.parse('C:\Users\tpegg\Desktop\privilege\IB-14-20059.stix.xml')
+    @output = Ewinparser::Spreadsheet_parser.parse('C:\Users\tpegg\Desktop\privilege\ANUNAK_02-20-2015.xlsx')
+#    @output.each do |k,v|
+#      @clean_output = Ewinparser.clean_input(k)
+#    end
+#    puts @clean_output
   rescue Errno::ENOENT => e
     $stderr.puts e.message
   end
