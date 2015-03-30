@@ -6,7 +6,7 @@ require 'time'
 require 'json'
 
 module Ewinparser
-  class StixParser
+  class Stix_parser
     def self.parse(file)
 
       @xml_file_name = file
