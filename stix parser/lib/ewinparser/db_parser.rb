@@ -8,12 +8,12 @@ module Ewinparser
 
       @parsed = JSON.parse(@json)
 
-      Ewinparser.logger.debug "Load_database_from_file Start"
-      Ewinparser.logger.info  "Load_database_from_file:  Reading #{file}"
+      Ewinparser.logger.debug "db_parser Start"
+      Ewinparser.logger.info  "db_parser Reading #{file}"
       @parsed.each do | key,value |
-        Ewinparser.logger.debug  "Load_database_from_file -> Parsed: " + "%-25s  %25s" % [ key, value]
+        Ewinparser.logger.debug  "db_parser Parsed: " + "%-25s  %25s" % [ key, value]
       end
-      Ewinparser.logger.debug "Load_database_from_file End"
+      Ewinparser.logger.debug "db_parser End"
 
       @parsed
 
