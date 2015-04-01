@@ -243,18 +243,18 @@ end
 #@new_hash = JSON.parse(@json_text)
 #
 #
-##@new_hash.each do | k,v|
-##  @parsed_hash[k] = v if Time.parse(v[1]).to_date <= Date.today
-##end
+@new_hash.each do | k,v|
+  @parsed_hash[k] = v if Time.parse(v[1]).to_date <= Date.today
+end
 #
 #parsed_hash = Hash.new
 #@new_hash.each do | pair|
 #  parsed_hash.store(pair[0], pair[1]) if Time.parse(pair[1][1]).to_date >= Date.today
 #end
 #
-#parsed_hash.each do | k,v|
-#  puts "#{k}:#{v}"
-#end
+parsed_hash.each do | k,v|
+  puts "#{k}:#{v}"
+end
 #
 #
 ### Read JSON from a file, iterate over objects

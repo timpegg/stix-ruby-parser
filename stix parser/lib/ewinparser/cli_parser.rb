@@ -10,7 +10,7 @@ module Ewinparser
       options = default_options()
 
       opt_parser = OptionParser.new do |opts|
-        opts.banner = "ewinparser - v#{Ewinparser::VERSION}"
+        opts.banner = "ewinparser - #{Ewinparser::VERSION}"
         opts.separator ""
         opts.separator "Usage: #{@@command_name} [options]"
         opts.separator ""
@@ -27,7 +27,8 @@ module Ewinparser
           options.outputfile = outfile
         end
 
-        opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs") do |jsonfile|
+        # TODO Handle a directory location of the EWINS
+        opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs") do |directory|
           options.jsonfile = jsonfile
         end
 
@@ -41,8 +42,12 @@ module Ewinparser
           options.show_help = true
         end
       end
+      
       # Parse the options
       opt_parser.parse!(args)
+      
+      # You have to have at least the import file
+      raise OptionParser::MissingArgument if options[:inputfile].nil?
 
       options
 
