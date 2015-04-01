@@ -6,8 +6,6 @@ require 'logger'
 module Ewinparser
   class CliParser
     @@command_name = 'ewinparser'
-
-    
     def self.parse(args)
       options = default_options()
 
@@ -19,14 +17,16 @@ module Ewinparser
 
         opts.separator "Specific options:"
 
-        # This is the file used as the database.  If the file is empty then the script generates a new database.
-        # TODO Create an entry for the JSONFile that has the some file meta data information. Need to think if there is any useful information for this header.
-        opts.on("-j", "--jsonfile JSONFILENAME", "Output from previous #{@@command_name} execution.",
-                                                 " If this is empty or dosen't exist this is where the output will be kept",
-                                                 " If the file has contents this will be updated with the current information") do |jsonfile|
-          options.jsonfile = jsonfile
+        # TODO Make input file manditory
+        opts.on("-i", "--infile JSONFILENAME", "Input file in json format that contains the current EWIN database") do |infile|
+          options.inputfile = infile
         end
-        
+
+        # TODO If no output is provided output results to STDOUT
+        opts.on("-o", "--outfile JSONFILENAME", "Output file for the updated EWIN database") do |outfile|
+          options.outputfile = outfile
+        end
+
         opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs") do |jsonfile|
           options.jsonfile = jsonfile
         end
@@ -47,39 +47,38 @@ module Ewinparser
       options
 
     end
-    
-    def self.default_options
-        options = OpenStruct.new
-        options.version = nil
-        options.loglevel = Logger::INFO
-        options.show_help = false
-        options.quiet = false
 
-        options
+    def self.default_options
+      options = OpenStruct.new
+      options.version = nil
+      options.loglevel = Logger::INFO
+      options.show_help = false
+      options.quiet = false
+
+      options
     end
 
-
     def self.help
-        parse(['--help'])
+      parse(['--help'])
     end
 
     # Parse a log level argument into the appropriate Logger constant
     def self.log_level_parse(level)
-        if(level == :info)
-            return Logger::INFO
-        elsif(level == :debug)
-            return Logger::DEBUG
-        elsif(level == :warn)
-            return Logger::WARN
-        elsif(level == :error)
-            return Logger::ERROR
-        end
+      if(level == :info)
+        return Logger::INFO
+      elsif(level == :debug)
+        return Logger::DEBUG
+      elsif(level == :warn)
+        return Logger::WARN
+      elsif(level == :error)
+        return Logger::ERROR
+      end
     end
 
     def self.command_name
-      @@command_name 
+      @@command_name
     end
-    
+
   end
 end
 
