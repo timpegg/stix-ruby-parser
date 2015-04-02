@@ -1,5 +1,6 @@
 require 'roo'
 require 'time'
+
 require_relative '../ewinparser'
 
 module Ewinparser
@@ -10,10 +11,15 @@ module Ewinparser
       @time = Time.now.to_s
       @results_hash = Hash.new
 
-      #      @xls = Roo::Spreadsheet.open(@file)
-      #TODO check to see if the file is csv or xls or xlsx
-      # for now we'll just parse the xlsx files.
-      @s = Roo::Excelx.new(@file)
+      if @file =~ /(.*)[Xx][Ll][Ss][Xx]$/
+        @s = Roo::Excelx.new(@file)
+      end
+  
+      if @file =~ /(.*)[Cc][Ss][Vv]$/
+        @s = Roo::CSV.new(@file)
+      end
+      
+      
       @file_name_comp = File.basename @file
       Ewinparser.logger.info "%-18s %s" % [ "spreadsheet_parser [full file name]:" , @file ]
       Ewinparser.logger.info "%-18s %s" % [ "spreadsheet_parser [file name]:" , @file_name_comp ]
@@ -41,7 +47,7 @@ module Ewinparser
           when "Domain:"
             @domain = @s.cell(@current_row, 2)
           else
-            Ewinparser.logger.debug "%-18s %s" % [ "Spreadsheet_parser [skipped row]:" , @s.row(@current_row).to_s ]        
+            Ewinparser.logger.debug "%-18s %s" % [ "Spreadsheet_parser [skipped row]:" , @s.row(@current_row).to_s ]
           end
           if (@s.cell(@current_row, 1).to_s.include? "Identifier:")
             @type = @s.cell(@current_row, 2)
@@ -55,7 +61,7 @@ module Ewinparser
               @type = "command and control"
             else
             end
-            
+
             if @ips.nil?
               @key = @domain.downcase
             else
@@ -64,7 +70,7 @@ module Ewinparser
             Ewinparser.logger.info "%-18s %s %s %s %s" % [ "Spreadsheet_parser [result]:" , @key, @type, @file_name_comp, @time ]
 
             @results_hash[@key] = ["uri", @type.downcase, @file_name_comp.downcase, @time]
-              
+
           end
 
           #now clear the contents of the record
@@ -77,6 +83,8 @@ module Ewinparser
 
         @current_row += 1
       end
+
+      @results_hash
       
     end
 

@@ -186,9 +186,12 @@ module Ewinparser
 
       @xml_file.close
 
-      Ewinparser.logger.info "%-10s" % [ "Hash return values:  "]
-      @results_hash.each do | k,v|
-        Ewinparser.logger.info "   %15s" % [ "#{k}:#{v}" ]
+      Ewinparser.logger.info "%s: Found %s entries" % [ "found :  ", @results_hash.length]
+        
+      if Ewinparser.logger.debug?
+        @results_hash.each do | k,v|
+          Ewinparser.logger.debug "   %15s" % [ "#{k}:#{v}" ]
+        end
       end
 
       Ewinparser.logger.info  "Parser complete"
