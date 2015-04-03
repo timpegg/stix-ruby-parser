@@ -8,6 +8,8 @@ require 'ewinparser/cli_parser'
 require 'ewinparser/ewinstore.rb'
 require 'ewinparser/scrubber'
 require 'ewinparser/spreadsheet_parser'
+require 'ewinparser/printer'
+
 
 def main
   opts = nil
@@ -82,6 +84,8 @@ def main
 #        @parsed_files.push(file)
 #      end
 
+      # TODO Need to be able to update the database with PDF findings.
+      
     end
 
     puts "%s results:" % [Ewinparser::CliParser.command_name]
@@ -92,7 +96,12 @@ def main
     @parsed_files.each do | file |
       puts "\t %-35s Entries: %4s" % [file[0],file[1]]
     end
+    
+    puts 
+    puts
 
+    Ewinparser::Printer.print_ticket(@files)
+    
   rescue Errno::ENOENT => e
     $stderr.puts e.message
   end

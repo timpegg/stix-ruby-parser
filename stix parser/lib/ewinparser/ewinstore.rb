@@ -6,6 +6,7 @@ require 'date'
 module Ewinparser
   class Ewinstore
     attr_reader :ewin_store_hash
+
     @ewin_store_hash = Hash.new
     def self.import(file)
 
@@ -76,6 +77,36 @@ module Ewinparser
       @new_hash.each do |k,v|
         @ewin_store_hash[k] = v
       end
+    end
+
+    def self.get_ips
+      @out_array = Array.new
+      @ewin_store_hash.each do |k,v|
+        if k =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
+          @out_array.push(k)
+        end
+      end
+      @out_array
+    end
+
+    def self.get_domains
+      @out_array = Array.new
+      @ewin_store_hash.each do |k,v|
+        if (k =~ /[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}/ and !k.include?('@'))
+          @out_array.push(k)
+        end
+      end
+      @out_array
+    end
+
+    def self.get_emails
+      @out_array = Array.new
+      @ewin_store_hash.each do |k,v|
+        if k.include?("@")
+          @out_array.push(k)
+        end
+      end
+      @out_array
     end
 
     def self.ewin_store_length
