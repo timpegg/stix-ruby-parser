@@ -74,6 +74,9 @@ PROCESS
 	         	<cybox:Related_Object id="NCCIC:Object-b94e098e-1681-4ac3-92e7-7b3628340664">
 	           		<cybox:Properties category="ipv4-addr" xsi:type="AddrObj:AddressObjectType">
 						<AddrObj:Address_Value condition="Equals">198.23.143.81</AddrObj:Address_Value>
+						
+						
+						
 
 	* There are URL within the Email Message object.  Those should be collected as well.
 	      <indicator:Observable>
@@ -84,8 +87,10 @@ PROCESS
 	              <cybox:Properties type="URL">
 	                <URIObj:Value condition="Equals">http://web.neonbilisim.com/tag/Uid.php?reg=[redacted]</URIObj:Value>
 		
-	
-	
+	* 
+            <indicator:Related_Indicators scope="exclusive">
+                <indicator:Related_Indicator>
+                    <stixCommon:Relationship>Connected_From</stixCommon:Relationship>	
 	
 				
 	* Parse URL List
