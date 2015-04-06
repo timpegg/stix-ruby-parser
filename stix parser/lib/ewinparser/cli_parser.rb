@@ -7,7 +7,6 @@ module Ewinparser
   class CliParser
 
     @command_name = 'ewinparser'
-    
     def self.parse(args)
       options = default_options()
 
@@ -16,20 +15,36 @@ module Ewinparser
         opts.separator ""
         opts.separator "Usage: #{@command_name} [options]"
         opts.separator ""
-        #TODO Add more command usage information
+        opts.separator "This script will process EWIN files looking for valid email addresses, IP addresses, URIs and domain/host"
+        opts.separator "names.  These results are compared with the current database of entries.  If the entry matches an"
+        opts.separator "existing entry then it’s updated.  After updates are met the database removes any entries that are older"
+        opts.separator "than a year.  Once the database run is complete, the results are displayed.  These results are formatted" 
+        opts.separator "for the HEAT ticket."
+        opts.separator ""
 
         opts.separator "Specific options:"
 
-        opts.on("-i", "--infile JSONFILENAME", "Input file in json format that contains the current EWIN database") do |infile|
+        opts.on("-i", "--infile JSONFILENAME", "File containing current EWIN database in json format") do |infile|
           options.inputfile = infile
         end
 
-        opts.on("-o", "--outfile JSONFILENAME", "Output file for the updated EWIN database") do |outfile|
+        opts.on("-o", "--outfile JSONFILENAME", "File where the updated EWIN database will be saved in json format") do |outfile|
           options.outputfile = outfile
         end
 
-        opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs") do |directory|
+        opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs to process") do |directory|
           options.directory = directory
+        end
+
+        opts.on("-j", "--joinfile JSONFILENAME", "Json file to merge with the current EWIN database") do |directory|
+          options.directory = directory
+        end
+
+        opts.on("-m", "--manualfile FILENAME", "The file with manual entries from files that aren't parsed",
+        "  File format is [ENTRY], [FILENAME]",
+        "  ENTRY - ip, email address, domain name",
+        "  FILENAME - File name where the ENTRY was found") do |file|
+          options.manualfile = file
         end
 
         opts.on("--loglevel=LEVEL", [:error, :warn, :info, :debug], "Set logging level (error, warn, info, debug)") do |level|
@@ -47,8 +62,10 @@ module Ewinparser
       opt_parser.parse!(args)
 
       # Here for mandatory arguments
-      #      raise OptionParser::MissingArgument if options[:outfile].nil?
 
+#      raise OptionParser::MissingArgument if (options[:outfile].nil? and !options.show_help)
+      raise OptionParser::MissingArgument if ((options[:outfile].nil? and (options[:manualfile].nil? and options[:directory].nil?)) and !options.show_help)
+      
       options
 
     end
