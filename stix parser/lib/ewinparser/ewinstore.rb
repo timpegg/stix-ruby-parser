@@ -13,7 +13,7 @@ module Ewinparser
       @file = open(file)
       @json = @file.read
 
-      @ewin_store_hash  = JSON.parse(@json)
+      @ewin_store_hash = JSON.parse(@json)
 
       Ewinparser.logger.debug "ewinstore::open Start"
       Ewinparser.logger.info  "ewinstore::open Reading #{file}"
