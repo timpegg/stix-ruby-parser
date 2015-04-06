@@ -4,7 +4,11 @@ require 'pp'
 require 'logger'
 require 'time'
 require 'json'
+require File.expand_path("../../ewinparser", __FILE__)
 
+#require '../ewinparser'
+
+#TODO Take the time date stamp from the STIX Header as the time for item
 module Ewinparser
   class Stix_parser
     def self.parse(file)
@@ -24,6 +28,12 @@ module Ewinparser
         Ewinparser.logger.debug  "XML NameSpaces: " + "%-10s  %10s" % [ key, value]
       end
 
+      @stix_produced_time_nodes = @doc.xpath('/stix:STIX_Package/stix:STIX_Header/stix:Information_Source/stixCommon:Time/cyboxCommon:Produced_Time')
+      @stix_produced_time_nodes.each do |node|
+        @stix_produced_time = node.content
+      end
+      @stix_produced_time = Time.now.to_s unless !@stix_produced_time.nil?
+      
       # this sets the path for just the Indicator nodes.
       @stix_indicators = @doc.xpath('/stix:STIX_Package/stix:Indicators/stix:Indicator')
 
@@ -43,7 +53,7 @@ module Ewinparser
           Ewinparser.logger.debug "%-18s %s" % [ " Indicator:Observable [Name]:" , indicator_observable.name ]
           Ewinparser.logger.debug "%-18s %s" % [ " Indicator:Observable [@id]:"  , indicator_observable.attribute("id") ]
 
-          @cybox_objects = indicator_observable.search('./cybox:Object')
+          @cybox_objects = indicator_observable.search('//cybox:Object')
 
           @cybox_objects.each do | cybox_object |
             Ewinparser.logger.debug "%-18s %s" % [ "  cybox:Object [Path]:" , cybox_object.path ]
@@ -54,7 +64,8 @@ module Ewinparser
             @cybox_properties=cybox_object.search('./cybox:Properties[@xsi:type="EmailMessageObj:EmailMessageObjectType"]   |
                                                  ./cybox:Properties[@xsi:type="AddressObj:AddressObjectType"]  |
                                                  ./cybox:Properties[@xsi:type="LinkObj:LinkObjectType"] |
-                                                 ./cybox:Properties[@xsi:type="URIObj:URIObjectType"]
+                                                 ./cybox:Properties[@xsi:type="URIObj:URIObjectType"] |
+                                                 ./cybox:Properties[@xsi:type="DomainNameObj:DomainNameObjectType"]
                                             ')
 
             @cybox_properties.each do |cybox_property |
@@ -66,40 +77,44 @@ module Ewinparser
 
               if cybox_property.namespaces.has_key?('xmlns:DomainNameObj')
                 Ewinparser.logger.debug "   cybox:Properties Note: Has namespace xmlns:DomainNameObj"
-                @domainnameobjs = cybox_property.search('./DomainNameObj:Value')
+                @domainnameobjs = cybox_property.search('//DomainNameObj:Value  |
+                                                         //DomainNameObj:DomainNameObjectType
+                                                         ')
 
                 @domainnameobjs.each do | domainnameobj |
                   Ewinparser.logger.debug "%-18s %s" % [ "    DomainNameObj:Value [Path]:" , domainnameobj.path ]
                   Ewinparser.logger.debug "%-18s %s" % [ "    DomainNameObj:Value [Name]:" , domainnameobj.name ]
                   Ewinparser.logger.debug "%-18s %s" % [ "    DomainNameObj:Value [Content]:" , domainnameobj.content ]
-                  @observable_item.push(domainnameobj.content)
+                  @observable_item.push(domainnameobj.content) unless domainnameobj.content =~ /[Rr][Ee][Dd][Aa][Cc][Tt][Ee][Dd]/
                 end # End domainnameobjs.each
 
               else
-                Ewinparser.logger.debug "   cybox:Propertie Note: Doesn't have namespace xmlns:DomainNameObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Doesn't have namespace xmlns:DomainNameObj"
               end # End cybox_property.namespaces.has_key?
 
               if cybox_property.namespaces.has_key?('xmlns:URIObj')
-                Ewinparser.logger.debug "   cybox:Propertie Note: Has namespace xmlns:URIObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Has namespace xmlns:URIObj"
 
-                @uriobj_values = cybox_property.search('./URIObj:Value[@condition="Equals"]')
+                #                @uriobj_values = cybox_property.search('./URIObj:Value[@condition="Equals"]')
+                @uriobj_values = cybox_property.search('//URIObj:Value')
 
                 @uriobj_values.each do | uriobj_value |
                   Ewinparser.logger.debug "%-18s %s" % [ "    URIObj:Value [Path]:" , uriobj_value.path ]
                   Ewinparser.logger.debug "%-18s %s" % [ "    URIObj:Value [Name]:" , uriobj_value.name ]
                   Ewinparser.logger.debug "%-18s %s" % [ "    URIObj:Value [Content]:" , uriobj_value.content ]
-                  @observable_item.push(uriobj_value.content)
+                  @observable_item.push(uriobj_value.content) unless uriobj_value.content =~ /[Rr][Ee][Dd][Aa][Cc][Tt][Ee][Dd]/
 
                 end # End uriobj_values.each
 
               else
-                Ewinparser.logger.debug "   cybox:Propertie Note: Doesn't have namespace xmlns:URIObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Doesn't have namespace xmlns:URIObj"
               end # End cybox_property.namespaces.has_key?
 
               if cybox_property.namespaces.has_key?('xmlns:AddressObj')
                 Ewinparser.logger.debug "   cybox:Properties Note: Has namespace xmlns:AddressObj"
 
-                @addrobj_address_values = cybox_property.search('./AddressObj:Address_Value[@condition="Equals"]')
+                #                @addrobj_address_values = cybox_property.search('./AddressObj:Address_Value[@condition="Equals"]')
+                @addrobj_address_values = cybox_property.search('./AddressObj:Address_Value')
 
                 @addrobj_address_values.each do | addrobj_address_values |
                   Ewinparser.logger.debug "%-18s %s" % [ "    AddrObj:Address_Value [Path]:" , addrobj_address_values.path ]
@@ -110,11 +125,11 @@ module Ewinparser
                 end # End @addrobj_address_values.each
 
               else
-                Ewinparser.logger.debug "   cybox:Propertie Note: Doesn't have namespace xmlns:AddressObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Doesn't have namespace xmlns:AddressObj"
               end # End cybox_property.namespaces.has_key?
 
               if cybox_property.namespaces.has_key?('xmlns:EmailMessageObj')
-                Ewinparser.logger.debug "   cybox:Propertie Note: Has namespace xmlns:EmailMessageObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Has namespace xmlns:EmailMessageObj"
 
                 @emailmessageobj_headers = cybox_property.search('./EmailMessageObj:Header')
 
@@ -143,7 +158,7 @@ module Ewinparser
                 end # End email_message_headers.each
 
               else
-                Ewinparser.logger.debug "   cybox:Propertie Note: Doesn't have namespace xmlns:EmailMessageObj"
+                Ewinparser.logger.debug "   cybox:Properties Note: Doesn't have namespace xmlns:EmailMessageObj"
               end # End cybox_property.namespaces.has_key?
 
             end # End cybox_properties.each
@@ -173,33 +188,20 @@ module Ewinparser
               @kill_chain_name = stixcommon_kill_chain_phase.attribute('name').content
 
               @observable_item.each do |item|
-                Ewinparser.logger.debug "%-10s %s" % [ "Found: ", item.downcase + " ::: " + @observable_type.downcase + " : " + @kill_chain_name.downcase  + " : " + @xml_file_name_comp.downcase + " : " + Time.now.to_s ]
-               @results_hash[item.downcase] = [@observable_type.downcase, @kill_chain_name.downcase, @xml_file_name_comp.downcase, Time.now.to_s]
+                Ewinparser.logger.debug "%-10s %s" % [ "Found: ", item.downcase + " ::: " + @observable_type.downcase + " : " + @kill_chain_name.downcase  + " : " + @xml_file_name_comp.downcase + " : " + @stix_produced_time ]
+                @results_hash[item.downcase] = [@observable_type.downcase, @kill_chain_name.downcase, @xml_file_name_comp.downcase, @stix_produced_time]
               end
 
             end # End stixcommon_kill_chain_phases
 
           end # End indicator_kill_chan_phases.each
 
-          @indicator_related_indicators = stix_indicator.search('./indicator:Related_Indicators')
+           @observable_item.each do |item|
+            Ewinparser.logger.debug "%-10s %s" % [ "Found: ", item.downcase + " ::: " + @observable_type.downcase + " : malware : " + @xml_file_name_comp.downcase + " : " + @stix_produced_time ]
+            @results_hash[item.downcase] = [@observable_type.downcase, 'malware', @xml_file_name_comp.downcase, @stix_produced_time]
+          end
 
-          @indicator_related_indicators.each do | indicator_related_indicators |
-            Ewinparser.logger.debug "%-18s %s" % [ " Indicator:Related_Indicators [Path]:" , indicator_related_indicators.path ]
-            Ewinparser.logger.debug "%-18s %s" % [ " Indicator:Related_Indicators [Name]:" , indicator_related_indicators.name ]
-
-            @stixcommon_relationship = indicator_related_indicators.search('./stixCommon:Relationship')
-            @stixcommon_relationship.each do | stixcommon_related_indicators |
-              if stixcommon_related_indicators.content.downcase == 'conneted_from'
-                @observable_item.each do |item|
-                  Ewinparser.logger.debug "%-10s %s" % [ "Found: ", item.downcase + " ::: " + @observable_type.downcase + " : malware : " + @xml_file_name_comp.downcase + " : " + Time.now.to_s ]
-                 @results_hash[item.downcase] = [@observable_type.downcase, 'malware', @xml_file_name_comp.downcase, Time.now.to_s]
-                end
-
-              end
-            end
-
-          end # End indicator_related_indicators
-
+ 
         end # End if !@observable_item.nil?
 
       end # End stix_indicators.each
