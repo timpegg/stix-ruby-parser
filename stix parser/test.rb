@@ -86,55 +86,55 @@ require 'time'
 #
 #
 #
-
-puts "****************StixParser Test**************************"
-require 'json'
-require 'date'
-require 'nokogiri-test.rb'
-require 'mail'
-require 'uri'
-
-# Mail and nokogiri must be installed.
-
-@theonering_hash = Hash.new()
-
-@working_dir = 'C:\Users\tpegg\Desktop\privilege'
-
-Dir.chdir @working_dir
-
-@files = Dir.entries(@working_dir).select {|f| !File.directory? f}
-
-@email_hash = Hash.new
-@uri_hash = Hash.new
-@addr_hash = Hash.new
-@link_hash = Hash.new
-
-@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*).[Xx][Mm][Ll]$/).each do | file |
-
-  @parser = StixParser.new(file)
-  @parser_hash = @parser.parse()
-
-  @parser_hash.each do | k,v|
-    puts "#{v[0]}"
-    case v[0]
-    when "emailmessageobj"
-      @email_hash[k] = [v]
-      #      puts "#{k} #{v}"
-    when "uriobj"
-      @uri_hash[k] = [v]
-      #      puts "#{k} #{v}"
-    when "linkobj"
-      @link_hash[k]=[v]
-      #      puts "#{k} #{v}"
-    when "addressobj"
-      @addr_hash[k]=[v]
-      #      puts "#{k} #{v}"
-    else
-      puts "ERROR:  #{k} ---  #{[v]}"
-    end
-  end
-
-end
+#
+#puts "****************StixParser Test**************************"
+#require 'json'
+#require 'date'
+#require 'nokogiri-test.rb'
+#require 'mail'
+#require 'uri'
+##
+## Mail and nokogiri must be installed.
+#
+#@theonering_hash = Hash.new()
+#
+#@working_dir = 'C:\Users\tpegg\Desktop\privilege'
+#
+#Dir.chdir @working_dir
+#
+#@files = Dir.entries(@working_dir).select {|f| !File.directory? f}
+#
+#@email_hash = Hash.new
+#@uri_hash = Hash.new
+#@addr_hash = Hash.new
+#@link_hash = Hash.new
+#
+#@files.grep(/(.*)[Ss][Tt][Ii][Xx](.*).[Xx][Mm][Ll]$/).each do | file |
+#
+#  @parser = StixParser.new(file)
+#  @parser_hash = @parser.parse()
+#
+#  @parser_hash.each do | k,v|
+#    puts "#{v[0]}"
+#    case v[0]
+#    when "emailmessageobj"
+#      @email_hash[k] = [v]
+#      #      puts "#{k} #{v}"
+#    when "uriobj"
+#      @uri_hash[k] = [v]
+#      #      puts "#{k} #{v}"
+#    when "linkobj"
+#      @link_hash[k]=[v]
+#      #      puts "#{k} #{v}"
+#    when "addressobj"
+#      @addr_hash[k]=[v]
+#      #      puts "#{k} #{v}"
+#    else
+#      puts "ERROR:  #{k} ---  #{[v]}"
+#    end
+#  end
+#
+#end
 
 #@theonering_hash.each do |k,v|
 #  @temp_str = URI(k).host if
@@ -243,18 +243,18 @@ end
 #@new_hash = JSON.parse(@json_text)
 #
 #
-@new_hash.each do | k,v|
-  @parsed_hash[k] = v if Time.parse(v[1]).to_date <= Date.today
-end
+#@new_hash.each do | k,v|
+#  @parsed_hash[k] = v if Time.parse(v[1]).to_date <= Date.today
+#end
 #
 #parsed_hash = Hash.new
 #@new_hash.each do | pair|
 #  parsed_hash.store(pair[0], pair[1]) if Time.parse(pair[1][1]).to_date >= Date.today
 #end
 #
-parsed_hash.each do | k,v|
-  puts "#{k}:#{v}"
-end
+#parsed_hash.each do | k,v|
+#  puts "#{k}:#{v}"
+#end
 #
 #
 ### Read JSON from a file, iterate over objects
@@ -268,4 +268,19 @@ end
 ##end
 #
 #puts "****************JSON Test END**************************"
+require 'nokogiri'
+require 'date'
+@xml_file_name = 'C:\Users\tpegg\Desktop\privilege - Copy\IB-14-20054.stix.xml'
+@xml_file = File.open(@xml_file_name,'r')
+@doc = Nokogiri::XML(@xml_file)
 
+@stix_produced_time_nodes = @doc.xpath('/stix:STIX_Package/stix:STIX_Header/stix:Information_Source/stixCommon:Time/cyboxCommon:Produced_Time')
+@stix_produced_time_nodes.each do |node|
+  @stix_produced_time = node.content
+end
+@stix_produced_time = Time.now.to_s unless !@stix_produced_time.nil?
+
+
+puts @stix_produced_time
+
+puts Date.parse(@stix_produced_time)
