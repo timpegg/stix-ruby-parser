@@ -11,7 +11,11 @@ module Ewinparser
     @input = @input.gsub(/\/.*/,"")
     @input = @input.gsub(/^.*</,"")
     @input = @input.gsub(/>.*$/,"")
-
+    
+    # check for private IP addresses
+    if @input =~ /(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)/
+      @input == nil
+    end
     @input
   end
 
@@ -19,9 +23,10 @@ module Ewinparser
     @inhash = hash
 
     @clean_output = Hash.new
-    
+
     @inhash.each do |k,v|
-      @clean_output[Ewinparser.clean_input(k)] = v
+      @key = Ewinparser.clean_input(k)
+      @clean_output[@key] = v unless  @key.nil? 
     end
 
     @clean_output
