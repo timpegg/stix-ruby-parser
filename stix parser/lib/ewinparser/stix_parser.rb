@@ -6,9 +6,7 @@ require 'time'
 require 'json'
 require File.expand_path("../../ewinparser", __FILE__)
 
-#require '../ewinparser'
 
-#TODO Take the time date stamp from the STIX Header as the time for item
 module Ewinparser
   class Stix_parser
     def self.parse(file)

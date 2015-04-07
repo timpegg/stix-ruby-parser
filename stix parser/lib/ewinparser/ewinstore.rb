@@ -28,7 +28,6 @@ module Ewinparser
 
     # This is the file used as the database.  If the file is empty then the script generates a new database.
     # TODO Create an entry for the JSONFile that has the some file meta data information. Need to think if there is any useful information for this header.
-    # TODO If the file is nil then write to STDOUT.
     def self.export(file)
       @file = open(file,"w")
 

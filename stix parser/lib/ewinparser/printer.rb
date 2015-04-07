@@ -4,16 +4,16 @@ module Ewinparser
   class Printer
     def self.print_ticket (file_array, io=$stdout)
       @files = file_array
-      #      @results = results_hash
       @io = io
 
+      
       if @io == $stdout
         @file_descriptor = @io.fileno
       else
         @file_descriptor = IO.sysopen(@io,"w")
       end
       @output = IO.new(@file_descriptor,"w")
-
+      
       @output.puts "EWIN Bulletins:"
       @output.puts "-" * 25
       @files.each do | file |
@@ -41,9 +41,8 @@ module Ewinparser
       @domains = Ewinparser::Ewinstore.get_domains
       @domains.sort_by!{|word| word.downcase}
       @domains.each do |domain|
-        #        @output.puts("http://#{domain}")
-        #        @output.puts("https://#{domain}")
-        @output.puts("#{domain}")
+        @output.puts("http://#{domain}")
+        @output.puts("https://#{domain}")
       end
 
       @output.puts "\n"
@@ -60,23 +59,8 @@ module Ewinparser
 
       @output.puts "\n"
 
-      #      @output.puts(arg1)
-
     end
 
-    def self.print_emails(results_hash, io=$stdout)
-      @io = io
-
-    end
-
-    def self.print_domains(results_hash, io=$stdout)
-      @io = io
-
-    end
-
-    def self.print_ips(results_hash, io=$stdout)
-
-    end
   end
 
 end

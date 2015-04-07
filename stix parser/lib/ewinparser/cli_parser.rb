@@ -41,10 +41,20 @@ module Ewinparser
         end
 
         opts.on("-m", "--manualfile FILENAME", "The file with manual entries from files that aren't parsed",
-        "  File format is [ENTRY], [FILENAME]",
-        "  ENTRY - ip, email address, domain name",
-        "  FILENAME - File name where the ENTRY was found") do |file|
+                                               "  File format is [ENTRY], [FILENAME]",
+                                               "  ENTRY - ip, email address, domain name",
+                                               "  FILENAME - File name where the ENTRY was found") do |file|
           options.manualfile = file
+        end
+
+        opts.on("-c", "--culldays DAYS", "OptionalAge in days to remove entries from the data base.", 
+                                         "  The default is a year (365)") do |days|
+          options.culldays = days
+        end
+
+        opts.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file.", 
+                                               "  The default is to be displayed on the screen") do |file|
+          options.ticketfile = file
         end
 
         opts.on("--loglevel=LEVEL", [:error, :warn, :info, :debug], "Set logging level (error, warn, info, debug)") do |level|
@@ -62,8 +72,6 @@ module Ewinparser
       opt_parser.parse!(args)
 
       # Here for mandatory arguments
-
-#      raise OptionParser::MissingArgument if (options[:outfile].nil? and !options.show_help)
       raise OptionParser::MissingArgument if ((options[:outfile].nil? and (options[:manualfile].nil? and options[:directory].nil?)) and !options.show_help)
       
       options
@@ -73,10 +81,11 @@ module Ewinparser
     def self.default_options
       options = OpenStruct.new
       options.version = nil
-      options.loglevel = Logger::INFO
+      options.loglevel = Logger::WARN
       options.show_help = false
       options.quiet = false
-
+      options.culldays = 365
+      
       options
     end
 
