@@ -7,6 +7,7 @@ module Ewinparser
     @input = @input.gsub(/\[dot\]/,".")
     @input = @input.gsub(/\[\.\]/,".")
     @input = @input.gsub(/[hH][Tt]{2}[Pp]:\/\//,"")
+    @input = @input.strip
     @input = @input.gsub(/:[0-9]+.*/,"")
     @input = @input.gsub(/\/.*/,"")
     @input = @input.gsub(/^.*</,"")
