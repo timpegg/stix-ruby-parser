@@ -76,10 +76,10 @@ module Ewinparser
     def self.add_hash(hash)
       @new_hash = hash
       @new_hash.each do |k,v|
-        @ewin_store_hash[k] = v
         if !@ewin_store_hash.has_key?(k)
           @added_hash[k] = v
         end
+        @ewin_store_hash[k] = v
       end
     end
 
