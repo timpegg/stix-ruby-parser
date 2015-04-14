@@ -2,6 +2,7 @@ require 'stringio'
 
 module Ewinparser
   class Printer
+    #TODO Separate output into differnet files
     def self.print_ticket (file_array, io=$stdout)
       @files = file_array
       @io = io
@@ -27,9 +28,14 @@ module Ewinparser
       @output.puts "-" * 25
 
       @emails = Ewinparser::Ewinstore.get_emails
+      
+      
       if !@emails.nil?
+        @linebreak = 1
         @emails.sort_by!{|word| word.downcase}
         @emails.each do |email|
+          @linebreak += 1
+          @output.puts if (@linebreak % 200) == 0
           @output.puts(email  + ';')
         end
 
