@@ -52,7 +52,9 @@ module Ewinparser
           options.culldays = days
         end
 
-        opts.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file.", 
+        opts.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file. Three other files are created as well",
+                                               "  One for firewall, one for the webfilter, and one for the email filter.",
+                                               "  These files use the tiket files as a base name for their file names.",
                                                "  The default is to be displayed on the screen") do |file|
           options.ticketfile = file
         end
