@@ -1,4 +1,5 @@
 require 'stringio'
+require 'pathname'
 
 module Ewinparser
   class Printer
@@ -9,23 +10,44 @@ module Ewinparser
 
       if @io == $stdout
         @file_descriptor = @io.fileno
+        @output_ticket = IO.new(@file_descriptor,"w")
+        @output_firewall = @output_ticket
+        @output_webfilter = @output_ticket
+        @output_emailfilter = @output_ticket
+        
       else
+        @file_base = File.basename(@io, ".*")
+        @file_path = Pathname.new(@io).dirname
+        puts @io
+        puts @file_base
+        puts @file_path
+       
         @file_descriptor = IO.sysopen(@io,"w")
-      end
-      @output = IO.new(@file_descriptor,"w")
+        @output_ticket = IO.new(@file_descriptor,"w")
 
-      @output.puts "EWIN Bulletins:"
-      @output.puts "-" * 25
+        @file_base = File.basename(@io, ".*")
+        @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_firewall.txt","w")
+        @output_firewall = IO.new(@file_descriptor,"w")
+
+        @file_base = File.basename(@io, ".*")
+        @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_webfilter.txt","w")
+        @output_webfilter = IO.new(@file_descriptor,"w")
+        
+        @file_base = File.basename(@io, ".*")
+        @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_emailfilter.txt","w")
+        @output_emailfilter = IO.new(@file_descriptor,"w")
+
+      end
+
+      @output_ticket.puts "EWIN Bulletins:"
+      @output_ticket.puts "-" * 25
       @files.each do | file |
-        @output.puts(file)
+        @output_ticket.puts(file)
       end
 
-      @output.puts "\n"
-      @output.puts "\n"
-
-      @output.puts "-" * 25
-      @output.puts "Emails"
-      @output.puts "-" * 25
+      @output_emailfilter.puts "-" * 25
+      @output_emailfilter.puts "Emails"
+      @output_emailfilter.puts "-" * 25
 
       @emails = Ewinparser::Ewinstore.get_emails
       
@@ -35,132 +57,95 @@ module Ewinparser
         @emails.sort_by!{|word| word.downcase}
         @emails.each do |email|
           @linebreak += 1
-          @output.puts if (@linebreak % 200) == 0
-          @output.puts(email  + ';')
+          @output_emailfilter.puts if (@linebreak % 200) == 0
+          @output_emailfilter.puts(email  + ';')
         end
 
         @emails = Ewinparser::Ewinstore.get_added_emails
 
-        @output.puts "\n"
-        @output.puts "-" * 25
-        @output.puts "Emails - Added"
-        @output.puts "-" * 25
+        @output_emailfilter.puts "\n"
+        @output_emailfilter.puts "-" * 25
+        @output_emailfilter.puts "Emails - Added"
+        @output_emailfilter.puts "-" * 25
 
         if !@emails.nil?
           @emails.sort_by!{|word| word.downcase}
           @emails.each do |email|
-            @output.puts(email + ';')
+            @output_emailfilter.puts(email + ';')
           end
         end
 
         @emails = Ewinparser::Ewinstore.get_removed_emails
 
-        @output.puts "\n"
-        @output.puts "-" * 25
-        @output.puts "Emails - Removed"
-        @output.puts "-" * 25
+        @output_emailfilter.puts "\n"
+        @output_emailfilter.puts "-" * 25
+        @output_emailfilter.puts "Emails - Removed"
+        @output_emailfilter.puts "-" * 25
 
         if !@emails.nil?
 
           @emails.sort_by!{|word| word.downcase}
           @emails.each do |email|
-            @output.puts(email + ';')
+            @output_emailfilter.puts(email + ';')
           end
         end
 
       end
 
-      @output.puts "\n"
-      @output.puts "\n"
-
-      @output.puts "-" * 25
-      @output.puts "URLs"
-      @output.puts "-" * 25
+     @output_webfilter.puts "-" * 25
+      @output_webfilter.puts "URLs"
+      @output_webfilter.puts "-" * 25
 
       @domains = Ewinparser::Ewinstore.get_domains
 
       if !@domains.nil?
         @domains.sort_by!{|word| word.downcase}
         @domains.each do |domain|
-          @output.puts("http://#{domain}")
-          @output.puts("https://#{domain}")
+          @output_webfilter.puts("http://#{domain}")
+          @output_webfilter.puts("https://#{domain}")
         end
 
       end
 
-      @domains = Ewinparser::Ewinstore.get_added_domains
-
-      #      if !@domains.nil?
-      #        @output.puts "\n"
-      #
-      #        @output.puts "-" * 25
-      #        @output.puts "URLs - Added"
-      #        @output.puts "-" * 25
-      #        @domains.sort_by!{|word| word.downcase}
-      #        @domains.each do |domain|
-      #          @output.puts("http://#{domain}")
-      #          @output.puts("https://#{domain}")
-      #        end
-      #
-      #      end
-      #
-      #      @domains = Ewinparser::Ewinstore.get_removed_domains
-      #
-      #      if !@domains.nil?
-      #        @output.puts "\n"
-      #
-      #        @output.puts "-" * 25
-      #        @output.puts "URLs - Removed"
-      #        @output.puts "-" * 25
-      #
-      #        @domains.sort_by!{|word| word.downcase}
-      #        @domains.each do |domain|
-      #          @output.puts("http://#{domain}")
-      #          @output.puts("https://#{domain}")
-      #        end
-      #
-      #      end
-
-      @output.puts "\n"
-      @output.puts "\n"
-
-      @output.puts "-" * 25
-      @output.puts "IPs"
-      @output.puts "-" * 25
+      @output_firewall.puts "-" * 25
+      @output_firewall.puts "IPs"
+      @output_firewall.puts "-" * 25
 
       @ips = Ewinparser::Ewinstore.get_ips
       if !@ips.nil?
         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
         @ips.each do |ip|
-          @output.puts(ip)
+          @output_firewall.puts(ip)
+          @output_webfilter.puts("http://#{ip}")
+          @output_webfilter.puts("https://#{ip}")        
         end
       end
 
       @ips = Ewinparser::Ewinstore.get_added_ips
 
-      @output.puts "\n"
-      @output.puts "-" * 25
-      @output.puts "IPs - Added"
-      @output.puts "-" * 25
+      @output_firewall.puts "\n"
+      @output_firewall.puts "-" * 25
+      @output_firewall.puts "IPs - Added"
+      @output_firewall.puts "-" * 25
 
       if !@ips.nil?
         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
         @ips.each do |ip|
-          @output.puts(ip)
+          @output_firewall.puts(ip)
         end
       end
 
       @ips = Ewinparser::Ewinstore.get_removed_ips
 
-      @output.puts "\n"
-      @output.puts "-" * 25
-      @output.puts "IPs - Removed"
-      @output.puts "-" * 25
+      @output_firewall.puts "\n"
+      @output_firewall.puts "-" * 25
+      @output_firewall.puts "IPs - Removed"
+      @output_firewall.puts "-" * 25
 
       if !@ips.nil?
         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
         @ips.each do |ip|
-          @output.puts(ip)
+          @output_firewall.puts(ip)
         end
       end
 
