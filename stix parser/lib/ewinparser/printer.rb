@@ -3,7 +3,6 @@ require 'pathname'
 
 module Ewinparser
   class Printer
-    #TODO Separate output into differnet files
     def self.print_ticket (file_array, io=$stdout)
       @files = file_array
       @io = io
@@ -12,15 +11,12 @@ module Ewinparser
         @file_descriptor = @io.fileno
         @output_ticket = IO.new(@file_descriptor,"w")
         @output_firewall = @output_ticket
-        @output_webfilter = @output_ticket
+        @out_webfilter = @output_ticket
         @output_emailfilter = @output_ticket
         
       else
         @file_base = File.basename(@io, ".*")
         @file_path = Pathname.new(@io).dirname
-        puts @io
-        puts @file_base
-        puts @file_path
        
         @file_descriptor = IO.sysopen(@io,"w")
         @output_ticket = IO.new(@file_descriptor,"w")
@@ -107,24 +103,8 @@ module Ewinparser
 
       end
 
-      @output_firewall.puts "-" * 25
-      @output_firewall.puts "IPs"
-      @output_firewall.puts "-" * 25
-
-      @ips = Ewinparser::Ewinstore.get_ips
-      if !@ips.nil?
-        @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
-        @ips.each do |ip|
-          @output_firewall.puts(ip)
-          @output_webfilter.puts("http://#{ip}")
-          @output_webfilter.puts("https://#{ip}")        
-        end
-      end
-
       @ips = Ewinparser::Ewinstore.get_added_ips
-
-      @output_firewall.puts "\n"
-      @output_firewall.puts "-" * 25
+     @output_firewall.puts "-" * 25
       @output_firewall.puts "IPs - Added"
       @output_firewall.puts "-" * 25
 
@@ -146,6 +126,21 @@ module Ewinparser
         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
         @ips.each do |ip|
           @output_firewall.puts(ip)
+        end
+      end
+ 
+      @output_firewall.puts "\n"
+      @output_firewall.puts "-" * 25
+      @output_firewall.puts "IPs"
+      @output_firewall.puts "-" * 25
+
+      @ips = Ewinparser::Ewinstore.get_ips
+      if !@ips.nil?
+        @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
+        @ips.each do |ip|
+          @output_firewall.puts(ip)
+          @output_webfilter.puts("http://#{ip}")
+          @output_webfilter.puts("https://#{ip}")        
         end
       end
 
