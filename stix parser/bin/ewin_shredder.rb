@@ -46,7 +46,7 @@ def main
 
         @files.each do |file|
 
-          if file =~ /(.*)[Ss][Tt][Ii][Xx]\.[Xx][Mm][Ll]$/
+          if file =~ /(.*)[Ss][Tt][Ii][Xx](.*)\.[Xx][Mm][Ll]$/
             @output_hash = Hash.new()
             @output_hash = Ewinparser::Stix_parser.parse(file)
             @file_processing_bar.increment
@@ -107,14 +107,14 @@ def main
     puts ''
     puts ''
     puts "%s results:" % [Ewinparser::CliParser.command_name]
-    puts "\t Files provided:        %4s" % [@files.length ]
-    puts "\t Files parsed:          %4s" % [@parsed_files.length]
+    puts "\t Files provided:         %4s" % [@files.length ]
+    puts "\t Files parsed:           %4s" % [@parsed_files.length]
     @all_entries = 0
     @parsed_files.each do | file |
       @all_entries += file[1]
     end
-    puts "\t All Enties found:      %4s" % [@all_entries]
-    puts "\t Unique Entries found:  %4s" % [@database::ewin_store_length]
+    puts "\t All Entries found:      %4s" % [@all_entries]
+    puts "\t Unique Entries found:   %4s" % [@database::ewin_store_length]
     puts
     puts "Files Parsed: "
     @parsed_files.each do | file |
