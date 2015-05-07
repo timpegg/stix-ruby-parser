@@ -14,30 +14,22 @@ def main
 
   Ewinparser::CliParser::parse(ARGV)
   Ewinparser::Configuration.validate!
+  
+  config = Ewinparser::Configuration
 
-#  begin
-#    opts = Ewinparser::CliParser.parse(ARGV)
-#  rescue OptionParser::InvalidOption => e
-#    puts e.message, ""
-#    help
-#  rescue OptionParser::MissingArgument => e
-#    puts e.message, "-o FILE and either -i FILENAME or -m FILENAME is required\n\n"
-#    help
-#  end
-
-  Ewinparser.logger.level = opts['loglevel']
+  Ewinparser.logger.level = config.loglevel
 
   begin
 
     @database =  Ewinparser::Ewinstore
-    @database.import(opts['inputfile']) if !opts['inputfile'].nil?
+    @database.import(config.inputfile) if !config.inputfile.nil?
     @parsed_files = Array.new
     @files = Array.new
 
-    if !opts['directory'].nil?
-      @files = Dir.entries(opts['directory']).select {|f| !File.directory? f}
+    if !config.directory.nil?
+      @files = Dir.entries(config.directory).select {|f| !File.directory? f}
 
-      Dir.chdir opts['directory']
+      Dir.chdir config.directory
 
       if !@files.nil?
         @file_processing_bar = ProgressBar.create(:title=> "Processing Files", :total=>@files.length, :starting_at => 0 )
@@ -76,9 +68,9 @@ def main
 
     end
 
-    if !opts['manualfile'].nil?
+    if !config.manualfile.nil?
       @manual_hash = Hash.new
-      File.open(opts['manualfile']).each do |line|
+      File.open(config.manualfile).each do |line|
         @entry, @entryfile = line.match(/(^.*), (.*)/).captures
         if @entry =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
           @manual_type = 'ipobj'
@@ -122,10 +114,10 @@ def main
     puts
     puts
 
-    @database.cull(opts['culldays'])
-    @database.export(opts['outputfile'])
+    @database.cull(config.culldays)
+    @database.export(config.outputfile)
 
-    Ewinparser::Printer.print_ticket(@files, opts['ticketfile'])
+    Ewinparser::Printer.print_ticket(@files, config.ticketfile)
 
   rescue Errno::ENOENT => e
     $stderr.puts e.message
@@ -133,10 +125,6 @@ def main
 
 end
 
-def help
-  Ewinparser::CliParser.help
-  exit
-end
 
 main()
 
