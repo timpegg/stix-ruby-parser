@@ -11,23 +11,21 @@ require 'ewinparser/spreadsheet_parser'
 require 'ruby-progressbar'
 
 def main
-  opts = nil
 
-  begin
-    opts = Ewinparser::CliParser.parse(ARGV)
-  rescue OptionParser::InvalidOption => e
-    puts e.message, ""
-    help
-  rescue OptionParser::MissingArgument => e
-    puts e.message, "-o FILE and either -i FILENAME or -m FILENAME is required\n\n"
-    help
-  end
+  Ewinparser::CliParser::parse(ARGV)
+  Ewinparser::Configuration.validate!
+
+#  begin
+#    opts = Ewinparser::CliParser.parse(ARGV)
+#  rescue OptionParser::InvalidOption => e
+#    puts e.message, ""
+#    help
+#  rescue OptionParser::MissingArgument => e
+#    puts e.message, "-o FILE and either -i FILENAME or -m FILENAME is required\n\n"
+#    help
+#  end
 
   Ewinparser.logger.level = opts['loglevel']
-
-  if opts.show_help
-    exit
-  end
 
   begin
 

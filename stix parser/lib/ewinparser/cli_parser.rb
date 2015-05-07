@@ -1,20 +1,27 @@
 require 'optparse'
 require 'singleton'
 require 'logger'
+require_relative "version"
 
 # Command line option parser
 module Ewinparser
 
-  ConfigurtionStruct = Struct.new(:version, :loglevel, :show_help, :quiet, :culldays)
+  ConfigurtionStruct = Struct.new(:version, :loglevel, :culldays, :inputfile, :outputfile, :directory, :manualfile, :ticketfile )
   class Configuration
     include Singleton
 
     @@config = ConfigurtionStruct.new
 
+    # Here are the default settings
     @@config.version = nil
     @@config.loglevel = Logger::WARN
-    @@config.show_help = false
     @@config.culldays = 365
+    @@config.inputfile = nil
+    @@config.outputfile = nil
+    @@config.directory = nil
+    @@config.manualfile = nil
+    @@config.ticketfile = nil
+    
     def self.config
       yield(@@config) if block_given?
       @@config
@@ -80,7 +87,7 @@ module Ewinparser
 
         parser.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file. Three other files are created as well",
         "  One for firewall, one for the webfilter, and one for the email filter.",
-        "  These files use the tiket files as a base name for their file names.",
+        "  These files use the ticket files as a base name for their file names.",
         "  The default is to be displayed on the screen") do |file|
           Configuration.ticketfile = file
         end
@@ -89,20 +96,21 @@ module Ewinparser
           Configuration.loglevel = log_level_parse(level)
         end
 
-        parser.on_tail("-h", "--help", "Show this message") do
-          puts parser
-          puts "\n"
-          Configuration.show_help = true
+        parser.on_tail("-h", "--help", "--usage", "Show this usage message and quit.") do |setting|
+          puts parser.help
+          exit
         end
+
+        parser.on_tail("-v", "--version", "Show version information about this program and quit.") do
+          puts "#{File.basename($0, File.extname($0))} v#{VERSION}"
+          exit
+        end
+
       end
 
       # Parse the options
-      opt_parser.parse!(args)
+      opts.parse!(args)
 
-    end
-
-    def self.help
-      parse(['--help'])
     end
 
     # Parse a log level argument into the appropriate Logger constant
