@@ -1,94 +1,104 @@
 require 'optparse'
-require 'ostruct'
+require 'singleton'
 require 'logger'
 
 # Command line option parser
 module Ewinparser
+
+  ConfigurtionStruct = Struct.new(:version, :loglevel, :show_help, :quiet, :culldays)
+  class Configuration
+    include Singleton
+
+    @@config = ConfigurtionStruct.new
+
+    @@config.version = nil
+    @@config.loglevel = Logger::WARN
+    @@config.show_help = false
+    @@config.culldays = 365
+    def self.config
+      yield(@@config) if block_given?
+      @@config
+    end
+
+    def self.to_hash
+      Hash[@@config.each_pair.to_a]
+    end
+
+    def self.method_missing(method, *args, &block)
+      if @@config.respond_to?(method)
+        @@config.send(method, *args, &block)
+      else
+        raise NoMethodError
+      end
+    end
+
+    def self.validate!
+      valid = true
+      #      valid = false if Configuration.required.nil?
+      #      valid = false if Configuration.enum.nil? or Configuration.list.nil?
+      raise ArgumentError unless valid
+    end
+
+  end
+
   class CliParser
-
-    @command_name = 'ewinparser'
+    #    @command_name = 'ewinparser'
     def self.parse(args)
-      options = default_options()
 
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "#{@command_name} - #{Ewinparser::VERSION}"
-        opts.separator ""
-        opts.separator "Usage: #{@command_name} [options]"
-        opts.separator ""
-        opts.separator "This script will process EWIN files looking for valid email addresses, IP addresses, URIs and domain/host"
-        opts.separator "names.  These results are compared with the current database of entries.  If the entry matches an"
-        opts.separator "existing entry then it’s updated.  After updates are met the database removes any entries that are older"
-        opts.separator "than a year.  Once the database run is complete, the results are displayed.  These results are formatted" 
-        opts.separator "for the HEAT ticket."
-        opts.separator ""
+      opts = OptionParser.new do |parser|
+        parser.separator ""
+        parser.separator "Specific usage:"
+        parser.separator ""
 
-        opts.separator "Specific options:"
-
-        opts.on("-i", "--infile JSONFILENAME", "File containing current EWIN database in json format") do |infile|
-          options.inputfile = infile
+        parser.on("-i", "--infile JSONFILENAME", "File containing current EWIN database in json format") do |infile|
+          Configuration.inputfile = infile
         end
 
-        opts.on("-o", "--outfile JSONFILENAME", "File where the updated EWIN database will be saved in json format") do |outfile|
-          options.outputfile = outfile
+        parser.on("-o", "--outfile JSONFILENAME", "File where the updated EWIN database will be saved in json format") do |outfile|
+          Configuration.outputfile = outfile
         end
 
-        opts.on("-d", "--inputdir DIRECTORY", "Location of EWINs to process") do |directory|
-          options.directory = directory
+        parser.on("-d", "--inputdir DIRECTORY", "Location of EWINs to process") do |directory|
+          Configuration.directory = directory
         end
 
-        opts.on("-j", "--joinfile JSONFILENAME", "Json file to merge with the current EWIN database") do |directory|
-          options.directory = directory
+        parser.on("-j", "--joinfile JSONFILENAME", "Json file to merge with the current EWIN database") do |directory|
+          Configuration.directory = directory
         end
 
-        opts.on("-m", "--manualfile FILENAME", "The file with manual entries from files that aren't parsed",
-                                               "  File format is [ENTRY], [FILENAME]",
-                                               "  ENTRY - ip, email address, domain name",
-                                               "  FILENAME - File name where the ENTRY was found") do |file|
-          options.manualfile = file
+        parser.on("-m", "--manualfile FILENAME", "The file with manual entries from files that aren't parsed",
+        "  File format is [ENTRY], [FILENAME]",
+        "  ENTRY - ip, email address, domain name",
+        "  FILENAME - File name where the ENTRY was found") do |file|
+          Configuration.manualfile = file
         end
 
-        opts.on("-c", "--culldays DAYS", "OptionalAge in days to remove entries from the data base.", 
-                                         "  The default is a year (365)") do |days|
-          options.culldays = days
+        parser.on("-c", "--culldays DAYS", "OptionalAge in days to remove entries from the data base.",
+        "  The default is a year (365)") do |days|
+          Configuration.culldays = days
         end
 
-        opts.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file. Three other files are created as well",
-                                               "  One for firewall, one for the webfilter, and one for the email filter.",
-                                               "  These files use the tiket files as a base name for their file names.",
-                                               "  The default is to be displayed on the screen") do |file|
-          options.ticketfile = file
+        parser.on("-t", "--ticketfile FILENAME", "Formatted output is saved to this file. Three other files are created as well",
+        "  One for firewall, one for the webfilter, and one for the email filter.",
+        "  These files use the tiket files as a base name for their file names.",
+        "  The default is to be displayed on the screen") do |file|
+          Configuration.ticketfile = file
         end
 
-        opts.on("--loglevel=LEVEL", [:error, :warn, :info, :debug], "Set logging level (error, warn, info, debug)") do |level|
-          options.loglevel = log_level_parse(level)
+        parser.on("--loglevel=LEVEL", [:error, :warn, :info, :debug], "Set logging level (error, warn, info, debug)") do |level|
+          Configuration.loglevel = log_level_parse(level)
         end
 
-        opts.on_tail("-h", "--help", "Show this message") do
-          puts opts
+        parser.on_tail("-h", "--help", "Show this message") do
+          puts parser
           puts "\n"
-          options.show_help = true
+          Configuration.show_help = true
         end
       end
 
       # Parse the options
       opt_parser.parse!(args)
 
-      # Here for mandatory arguments
-      raise OptionParser::MissingArgument if ((options[:outfile].nil? and (options[:manualfile].nil? and options[:directory].nil?)) and !options.show_help)
-      
-      options
-
-    end
-
-    def self.default_options
-      options = OpenStruct.new
-      options.version = nil
-      options.loglevel = Logger::WARN
-      options.show_help = false
-      options.quiet = false
-      options.culldays = 365
-      
-      options
     end
 
     def self.help
@@ -106,10 +116,6 @@ module Ewinparser
       elsif(level == :error)
         return Logger::ERROR
       end
-    end
-
-    def self.command_name
-      @command_name
     end
 
   end
