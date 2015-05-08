@@ -1,2 +1,3 @@
 # stix-ruby-parser
-This is an attempt to parse stix files using ruby.  
+This script parses files to keep track of EWINs.
+
