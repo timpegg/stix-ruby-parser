@@ -96,7 +96,7 @@ def main
     @file_processing_bar.finish
     puts ''
     puts ''
-    puts "%s results:" % [Ewinparser::CliParser.command_name]
+    puts "Results:"
     puts "\t Files provided:         %4s" % [@files.length ]
     puts "\t Files parsed:           %4s" % [@parsed_files.length]
     @all_entries = 0
