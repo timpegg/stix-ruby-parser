@@ -3,6 +3,8 @@ require 'singleton'
 require 'logger'
 require_relative "version"
 
+#TODO Add the ability to read the configuration from a file
+
 # Command line option parser
 module Ewinparser
 
@@ -49,7 +51,7 @@ module Ewinparser
   end
 
   class CliParser
-    #    @command_name = 'ewinparser'
+
     def self.parse(args)
 
       opts = OptionParser.new do |parser|
