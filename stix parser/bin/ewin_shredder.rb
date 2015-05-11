@@ -114,6 +114,9 @@ def main
     puts
     puts
 
+    @database.update_ips()
+    @database.update_emails()
+    @database.update_domains()
     @database.cull(config.culldays)
     @database.export(config.outputfile)
 

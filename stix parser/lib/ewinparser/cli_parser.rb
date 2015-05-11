@@ -1,6 +1,7 @@
 require 'optparse'
 require 'singleton'
 require 'logger'
+
 require_relative "version"
 
 #TODO Add the ability to read the configuration from a file
@@ -8,7 +9,7 @@ require_relative "version"
 # Command line option parser
 module Ewinparser
 
-  ConfigurtionStruct = Struct.new(:version, :loglevel, :culldays, :inputfile, :outputfile, :directory, :manualfile, :ticketfile )
+  ConfigurtionStruct = Struct.new(:version, :loglevel, :culldays, :inputfile, :outputfile, :directory, :manualfile, :ticketfile, :webfilter_maintenance )
   class Configuration
     include Singleton
 
@@ -23,7 +24,7 @@ module Ewinparser
     @@config.directory = nil
     @@config.manualfile = nil
     @@config.ticketfile = nil
-    
+    @@config.webfilter_maintenance = false
     def self.config
       yield(@@config) if block_given?
       @@config
@@ -45,13 +46,16 @@ module Ewinparser
       valid = true
       #      valid = false if Configuration.required.nil?
       #      valid = false if Configuration.enum.nil? or Configuration.list.nil?
+      if ( @@config.webfilter_maintenance and ( @@config.inputfile.nil? or  @@config.outputfile.nil? ) )
+
+        valid = false
+      end
       raise ArgumentError unless valid
     end
 
   end
 
   class CliParser
-
     def self.parse(args)
 
       opts = OptionParser.new do |parser|
