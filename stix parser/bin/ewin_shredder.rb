@@ -7,14 +7,13 @@ require 'ewinparser/cli_parser'
 require 'ewinparser/ewinstore'
 require 'ewinparser/printer'
 require 'ewinparser/spreadsheet_parser'
-
 require 'ruby-progressbar'
 
 def main
 
   Ewinparser::CliParser::parse(ARGV)
   Ewinparser::Configuration.validate!
-  
+
   config = Ewinparser::Configuration
 
   Ewinparser.logger.level = config.loglevel
@@ -114,17 +113,21 @@ def main
     puts
     puts
 
-    @database.cull(config.culldays)
-    @database.export(config.outputfile)
+    if config.webfilterrun
+      @database.cull(config.culldays, domains: true)
+      Ewinparser::Printer.print_webfilter_ticket(@files, config.ticketfile)
+    else
+      @database.cull(config.culldays, emails: true, ips: true)
+      Ewinparser::Printer.print_ticket(@files, config.ticketfile)
+    end
 
-    Ewinparser::Printer.print_ticket(@files, config.ticketfile)
+    @database.export(config.outputfile)
 
   rescue Errno::ENOENT => e
     $stderr.puts e.message
   end
 
 end
-
 
 main()
 
