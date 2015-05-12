@@ -14,7 +14,7 @@ module Ewinparser
     end
     @logger.datetime_format = "%Y-%m-%d %H:%M:%S"
     @logger.formatter = lambda do |severity, datetime, progname, msg|
-      "%-6s: #{Ewinparser::CliParser.command_name}: %10s\n" % [ severity, msg]
+      "%-6s: #{File.basename($0, File.extname($0))}: %10s\n" % [ severity, msg]
     end
 
     @logger

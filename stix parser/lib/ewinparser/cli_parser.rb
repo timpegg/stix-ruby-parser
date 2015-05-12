@@ -86,7 +86,7 @@ module Ewinparser
           Configuration.manualfile = file
         end
 
-        parser.on("-c", "--culldays DAYS", "OptionalAge in days to remove entries from the data base.",
+        parser.on("-c", "--culldays DAYS", Integer, "OptionalAge in days to remove entries from the data base.",
         "  The default is a year (365)") do |days|
           Configuration.culldays = days
         end

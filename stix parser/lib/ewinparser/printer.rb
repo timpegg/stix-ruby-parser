@@ -4,13 +4,14 @@ require 'pathname'
 module Ewinparser
   class Printer
     def self.print_webfilter_ticket(io=$stdout)
+      
+      @io = io
+      
       if @io == $stdout
         @file_descriptor = @io.fileno
         @output_webfilter = IO.new(@file_descriptor,"w")
 
       else
-        @file_base = File.basename(@io, ".*")
-        @file_path = Pathname.new(@io).dirname
 
         @file_descriptor = IO.sysopen(@io,"w")
         @output_webfilter = IO.new(@file_descriptor,"w")
