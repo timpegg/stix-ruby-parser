@@ -48,7 +48,10 @@ module Ewinparser
 
     end
 
-    def self.cull(days)
+    def self.cull_ips(days)
+    end
+
+    def self.cull(days: 365, emails: false, ips: false, domains: false )
 
       @culldate = Date.today - days
       @output = Hash.new()
@@ -56,18 +59,36 @@ module Ewinparser
       Ewinparser.logger.debug "ewinstore::cull Start"
       Ewinparser.logger.info  "ewinstore::cull removing entries older than #{days} old"
 
-      @ewin_store_hash.each do |k,v|
-        # count the ones that are older than days
-        if (Date.parse(v[3]) < @culldate)
-          Ewinparser.logger.debug  "ewinstore::cull removing: %s: %s" % [k,v]
-          @remove_hash[k] = v
-        else
-          Ewinparser.logger.debug  "ewinstore::cull keeping: %s: %s" % [k,v]
-          @output[k] = v
+      if (emails or ips or domains)
+        @ewin_store_hash.each do |k,v|
+          # count the ones that are older than days
+          if (Date.parse(v[3]) < @culldate)
+            if emails
+              if k.include?("@")
+                Ewinparser.logger.debug  "ewinstore::cull removing: %s: %s" % [k,v]
+                @remove_hash[k] = v
+              end
+            end
+            if ips
+              if k =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
+                Ewinparser.logger.debug  "ewinstore::cull removing: %s: %s" % [k,v]
+                @remove_hash[k] = v
+              end
+            end
+            if domains
+              if (k =~ /[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}/ and !k.include?('@'))
+                Ewinparser.logger.debug  "ewinstore::cull removing: %s: %s" % [k,v]
+                @remove_hash[k] = v
+              end
+            end
+          else
+            Ewinparser.logger.debug  "ewinstore::cull keeping: %s: %s" % [k,v]
+            @output[k] = v
+          end
+
+          @ewin_store_hash = @output
+
         end
-
-        @ewin_store_hash = @output
-
       end
       Ewinparser.logger.debug "ewinstore::cull End"
 
