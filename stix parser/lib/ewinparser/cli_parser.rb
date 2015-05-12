@@ -8,7 +8,7 @@ require_relative "version"
 # Command line option parser
 module Ewinparser
 
-  ConfigurtionStruct = Struct.new(:version, :loglevel, :culldays, :inputfile, :outputfile, :directory, :manualfile, :ticketfile )
+  ConfigurtionStruct = Struct.new(:version, :loglevel, :culldays, :inputfile, :outputfile, :directory, :manualfile, :ticketfile, :webfilterrun)
   class Configuration
     include Singleton
 
@@ -23,6 +23,7 @@ module Ewinparser
     @@config.directory = nil
     @@config.manualfile = nil
     @@config.ticketfile = nil
+    @@config.webfilterrun = false
     
     def self.config
       yield(@@config) if block_given?
@@ -96,6 +97,10 @@ module Ewinparser
 
         parser.on("--loglevel=LEVEL", [:error, :warn, :info, :debug], "Set logging level (error, warn, info, debug)") do |level|
           Configuration.loglevel = log_level_parse(level)
+        end
+
+        parser.on("-w", "--webfilter", "Run program to cull domains and output a complete list of domains for the webfilter") do
+          Configuration.webfilterrun = true
         end
 
         parser.on_tail("-h", "--help", "--usage", "Show this usage message and quit.") do |setting|
