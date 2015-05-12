@@ -3,6 +3,33 @@ require 'pathname'
 
 module Ewinparser
   class Printer
+    def self.print_webfilter_ticket(io=$stdout)
+      if @io == $stdout
+        @file_descriptor = @io.fileno
+        @output_webfilter = IO.new(@file_descriptor,"w")
+
+      else
+        @file_base = File.basename(@io, ".*")
+        @file_path = Pathname.new(@io).dirname
+
+        @file_descriptor = IO.sysopen(@io,"w")
+        @output_webfilter = IO.new(@file_descriptor,"w")
+
+      end
+ 
+      @domains = Ewinparser::Ewinstore.get_domains
+ 
+       if !@domains.nil?
+         @domains.sort_by!{|word| word.downcase}
+         @domains.each do |domain|
+           @output_webfilter.puts("http://#{domain}")
+           @output_webfilter.puts("https://#{domain}")
+         end
+ 
+       end
+
+    end
+
     def self.print_ticket (file_array, io=$stdout)
       @files = file_array
       @io = io
@@ -27,9 +54,6 @@ module Ewinparser
 
         @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_webfilter.txt","w")
         @output_webfilter = IO.new(@file_descriptor,"w")
-
-        @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_webfilter_removes.txt","w")
-        @output_webfilter_removes = IO.new(@file_descriptor,"w")
 
         @file_descriptor = IO.sysopen("#{@file_path}\\#{@file_base}_emailfilter.txt","w")
         @output_emailfilter = IO.new(@file_descriptor,"w")
@@ -103,28 +127,6 @@ module Ewinparser
 
       end
 
-      @domains = Ewinparser::Ewinstore.get_removed_domains
- 
-       if !@domains.nil?
-         @domains.sort_by!{|word| word.downcase}
-         @domains.each do |domain|
-           @output_webfilter_removes.puts("http://#{domain}")
-           @output_webfilter_removes.puts("https://#{domain}")
-         end
- 
-       end
-       
-      @ips = Ewinparser::Ewinstore.get_removed_ips
- 
-       if !@ips.nil?
-         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
-         @ips.each do |ip|
-           @output_webfilter_removes.puts("http://#{ip}")
-           @output_webfilter_removes.puts("https://#{ip}")
-         end
- 
-       end
-
       @ips = Ewinparser::Ewinstore.get_added_ips
       @output_firewall.puts "-" * 25
       @output_firewall.puts "IPs - Added"
@@ -134,8 +136,6 @@ module Ewinparser
         @ips.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
         @ips.each do |ip|
           @output_firewall.puts(ip)
-          @output_webfilter.puts("http://#{ip}")
-          @output_webfilter.puts("https://#{ip}")
         end
       end
 
