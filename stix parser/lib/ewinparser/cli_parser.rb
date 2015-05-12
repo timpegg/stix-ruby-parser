@@ -45,7 +45,10 @@ module Ewinparser
     def self.validate!
       valid = true
       #      valid = false if Configuration.required.nil?
-      #      valid = false if Configuration.enum.nil? or Configuration.list.nil?
+      #  You have to have an input, output and ticket file to run this script.
+      if Configuration.inputfile.nil? or Configuration.outputfile.nil? or Configuration.ticketfile.nil?
+        valid=false
+      end
       raise ArgumentError unless valid
     end
 
