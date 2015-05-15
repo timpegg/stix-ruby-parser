@@ -3,6 +3,10 @@ require 'pathname'
 
 module Ewinparser
   class Printer
+    def self.print_hash_to_file( io = $stdout, hash )
+      
+    end
+    
     def self.print_webfilter_ticket(io=$stdout)
       
       @io = io
