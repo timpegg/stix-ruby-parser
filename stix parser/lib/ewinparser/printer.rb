@@ -3,35 +3,45 @@ require 'pathname'
 
 module Ewinparser
   class Printer
-    def self.print_hash_to_file( io = $stdout, hash )
-      
+    def self.add_date()
+      Time.now.strftime('%Y%m%d-%H.%M.%S')
     end
-    
-    def self.print_webfilter_ticket(io=$stdout)
-      
-      @io = io
-      
-      if @io == $stdout
-        @file_descriptor = @io.fileno
-        @output_webfilter = IO.new(@file_descriptor,"w")
 
+    def self.sort(array)
+      if @entry =~ /\b(?:\d{1,3}\.){3}\d{1,3}\b/
+        array.sort_by! {|ip| ip.split('.').map{ |octet| octet.to_i} }
       else
+        array.sort_by!{|word| word.downcase}
+      end
+    end
 
-        @file_descriptor = IO.sysopen(@io,"w")
-        @output_webfilter = IO.new(@file_descriptor,"w")
+    def self.file_io(io = $stdout)
+      if io == $stdout
+        file_descriptor = io.fileno
+        IO.new(file_descriptor,"w")
+      else
+        file_descriptor = IO.sysopen(io,"w")
+        if config.datefile
+          IO.new("#{self.add_date()}-#{file_descriptor}","w")
+        else
+          IO.new("#{file_descriptor}","w")
+        end
+      end
+
+    end
+
+    def self.print_webfilter_ticket()
+
+      domains = Ewinparser::Ewinstore.get_domains
+      output = file_io(config.outputfile)
+       
+      if !domains.nil?
+        domains.each do |domain|
+          output.puts("http://#{domain}")
+          output.puts("https://#{domain}")
+        end
 
       end
- 
-      @domains = Ewinparser::Ewinstore.get_domains
- 
-       if !@domains.nil?
-         @domains.sort_by!{|word| word.downcase}
-         @domains.each do |domain|
-           @output_webfilter.puts("http://#{domain}")
-           @output_webfilter.puts("https://#{domain}")
-         end
- 
-       end
 
     end
 

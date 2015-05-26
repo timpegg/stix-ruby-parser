@@ -15,14 +15,15 @@ module Ewinparser
     @@config = ConfigurtionStruct.new
 
     # Here are the default settings
-    @@config.version = nil
-    @@config.loglevel = Logger::WARN
     @@config.culldays = 365
     @@config.inputfile = nil
-    @@config.outputfile = nil
     @@config.directory = nil
+    @@config.datefile = true
+    @@config.loglevel = Logger::WARN
     @@config.manualfile = nil
+    @@config.outputfile = nil
     @@config.ticketfile = nil
+    @@config.version = nil
     @@config.webfilterrun = false
     
     def self.config
