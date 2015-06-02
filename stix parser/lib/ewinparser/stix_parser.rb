@@ -6,7 +6,6 @@ require 'time'
 require 'json'
 require File.expand_path("../../ewinparser", __FILE__)
 
-
 module Ewinparser
   class Stix_parser
     def self.parse(file)
@@ -31,7 +30,7 @@ module Ewinparser
         @stix_produced_time = node.content
       end
       @stix_produced_time = Time.now.to_s unless !@stix_produced_time.nil?
-      
+
       # this sets the path for just the Indicator nodes.
       @stix_indicators = @doc.xpath('/stix:STIX_Package/stix:Indicators/stix:Indicator')
 
@@ -141,15 +140,19 @@ module Ewinparser
                     Ewinparser.logger.debug "%-18s %s" % [ "     EmailMessageObj:Sender [Path]:" , emailmessageobj_sender.path ]
                     Ewinparser.logger.debug "%-18s %s" % [ "     EmailMessageObj:Sender [Name]:" , emailmessageobj_sender.name ]
 
-                    @addrobj_address_values = emailmessageobj_sender.search('./AddrObj:Address_Value[@condition="Equals"]')
+                    if emailmessageobj_sender.namespaces.has_key?('AddressObj:Address_Value')
+                      @addrobj_address_values = emailmessageobj_sender.search('./AddressObj:Address_Value[@condition="Equals"]')
 
-                    @addrobj_address_values.each do | addrobj_address_value |
-                      Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Path]:" , addrobj_address_value.path ]
-                      Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Name]:" , addrobj_address_value.name ]
-                      Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Content]:" , addrobj_address_value.content ]
-                      @observable_item.push(addrobj_address_value.content)
+                      @addrobj_address_values.each do | addrobj_address_value |
+                        Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Path]:" , addrobj_address_value.path ]
+                        Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Name]:" , addrobj_address_value.name ]
+                        Ewinparser.logger.debug "%-18s %s" % [ "      AddrObj:Address_Value [Content]:" , addrobj_address_value.content ]
+                        @observable_item.push(addrobj_address_value.content)
 
-                    end # End addrobj_address_values.each
+                      end # End addrobj_address_values.each
+                    else
+                      Ewinparser.logger.debug "     EmailMessageObj:Sender Note: Doesn't have namespace AddressObj:Address_Value"
+                    end # if emailmessageobj_sender namespace
 
                   end # End emailmessageobj_senders
 
@@ -194,12 +197,11 @@ module Ewinparser
 
           end # End indicator_kill_chan_phases.each
 
-           @observable_item.each do |item|
+          @observable_item.each do |item|
             Ewinparser.logger.debug "%-10s %s" % [ "Found: ", item.downcase + " ::: " + @observable_type.downcase + " : malware : " + @xml_file_name_comp.downcase + " : " + @stix_produced_time ]
             @results_hash[item.downcase] = [@observable_type.downcase, 'malware', @xml_file_name_comp.downcase, @stix_produced_time]
           end
 
- 
         end # End if !@observable_item.nil?
 
       end # End stix_indicators.each
